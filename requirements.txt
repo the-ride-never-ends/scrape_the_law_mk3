@@ -1,0 +1,11 @@
+aiohttp
+aiomysql
+beautifulsoup4
+multipledispatch
+mysql-connector-python
+pandas
+pymysql
+pytest-playwright
+pyyaml
+requests
+selenium
