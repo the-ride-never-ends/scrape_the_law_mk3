@@ -17,12 +17,26 @@
 14. Documentation needs - TODO
 
 
+
+
+
+
+
+
+
+
 # 1. Problem Definition
 - Objective: Retrieve, store, and maintain text of all local legal codes in the US.
 - Languages: Python, MySQL, JavaScript
 - Input:
    - Push of a button.
-Outputs: A MySQL database of all local legal codes in the US related to the input datapoint. The ultimate variable “pg_content” is in plain text.
+Outputs: A MySQL database of all local legal codes in the US related to the input datapoint. The ultimate variable "legal_text” is in plain text.
+
+
+
+
+
+
 
 
 ## Constraints:
@@ -31,7 +45,7 @@ Outputs: A MySQL database of all local legal codes in the US related to the inpu
    - Publicly accessible online.
    - Text must be archived with a third party (e.g. Internet Archive, Libgen).
 2. Scalability:
-   - Handle and store millions or more pages of text and associated metadata.
+   - Handle and store millions or more pages of legal text and associated metadata.
    - Metadata must be sufficient for rigorous academic citation.
    - Extensible beyond local laws if needed.
 3. Performance:
@@ -39,12 +53,12 @@ Outputs: A MySQL database of all local legal codes in the US related to the inpu
    - Maximum time for retrieval and cleaning: 14 days.
    - Cost optimization: Minimize cost per character of output text so that the dataset is produced as cheaply as possible.
 4. Reliability: 
-   - Ensure high dataset size, factual accuracy, and trustworthiness.
+   - Size: Dataset must cover over 50% of the US population. Preferably, more than all US legal code databases combined.
+   - Factual Accuracy: Codes must be factually accurate, up-to-date, and trustworthy.
 5. Maintainability: 
    - Design for monthly execution and updates.
    - Extensible to weekly or daily updates if needed.
 6. Robustness:
-   - Input format agnostic (plaintext, html, pdf, etc.)
    - Rate limiting of scraping and search engine usage.
    - Alert user to unsuccessful data gathering attempts.
 7. Output format: Human-readable plaintext.

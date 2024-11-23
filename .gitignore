@@ -9,6 +9,7 @@ input/*
 !input/_input_goes_here.txt
 output/*
 !output/_output_goes_here.txt
+prompts/
 
 
 # IDE files
@@ -59,6 +60,25 @@ Thumbs.db
 *.Identifier
 *.csv
 *.html
+*.json
+*.md
+*.pdf
+*.pptx
+*.txt
+*.xlsx
+
+# Image files
+*.bmp
+*.gif
+*.ico
+*.jpeg
+*.jpg
+*.png
+*.svg
+*.tif
+
+# Audio and video
+*.aif
 
 # Jupyter Notebook
 .ipynb_checkpoints
