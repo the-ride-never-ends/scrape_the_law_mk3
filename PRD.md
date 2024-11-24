@@ -16,37 +16,137 @@ Version: 0.1.1
 
 # 1. Problem Definition
 
+
 ## 1.1 Objective
-Develop a system to programmatically collect, standardize, and maintain municipal legal codes from U.S. cities and counties. The system will:
+Build a web scraping system to collect municipal legal codes from US cities/counties and store them in a structured SQL database. The system will:
 - Extract legal codes from official government or government-contracted websites and databases.
-- Transform raw legal text into a structured, machine-readable format
-- Store processed data and metadata in a version-controlled database
-- Maintain version history and track amendments
-- Provide an API for accessing current and historical code versions
+- Parse and standardize raw content into structured data
+- Store in SQL database with proper relationships and versioning
+- Maintain version history and track code updates/amendments
+- Handle different website structures and content formats
 
 
-## 1.2 Input Specifications
-| Attribute        | Specification                                        | Bounds/Constraints                      |
-|------------------|------------------------------------------------------|-----------------------------------------|
-| Description      | Table containing all local-level jurisdictions in US | Incorporated communities only           |
-| Format           | Tabular data from a MySQL database                   | Must be convertible to UTF-8            |
-| Size             | 23,089 data points                                   | Legal codes must be available online    |
-| Delivery Methods | - API endpoint<br>- Terminal input<br>- File upload  | File types: SQL api, .xlsx, .csv        |
-| Source Authority | 50 US states and DC                                  | Must be an approved government source   |
+## 1.2 Seed Dataset Specifications
+| Attribute        | Specification                                                            | Bounds/Constraints                      |
+|------------------|--------------------------------------------------------------------------|-----------------------------------------|
+| Description      | Table containing all national incorporated places and counties in US¹    | Active, non-tribal communities only     |
+| Format           | c                                        | Must be convertible to UTF-8            |
+| Size             | 23,089 data points²                                                      | Legal codes must be available online    |
+| Delivery Methods | - API endpoint<br>- File download                                        | File types: Restful API, .xlsx, .csv    |
+| Source Authority | - State of Iowa<br>- U.S. Geological Survey                              | N/A                                     |
+- 1: For US government definition of census-designated places, see: https://www2.census.gov/geo/pdfs/reference/GARM/Ch9GARM.pdf, accessed 11/23/2024
+- 2: Source: https://data.iowa.gov/Boundaries/National-Incorporated-Places-and-Counties/djvt-gf3t/about_data, accessed 11/23/2024
 
 
-## 1.3 Input Processing Requirements
-1. Validation
-   - URL checks for availability and accessibility
-   - Data integrity checks (e.g. missing values, duplicates, etc.)
-   - 
+## 1.2 Legal Text Source Specifications
+| Attribute        | Specification                                          | Bounds/Constraints                      |
+|------------------|--------------------------------------------------------|-----------------------------------------|
+| Description      | Table containing all census-designated places in US    | Incorporated communities only           |
+| Format           | Tabular data from a MySQL database                     | Must be convertible to UTF-8            |
+| Size             | 23,089 (19,734 incorporated) data points*              | Legal codes must be available online    |
+| Delivery Methods | - API endpoint<br>- Terminal input<br>- File download  | See section 1.3: Input Types         |
+| Source Authority | Government or government-contracted websites           | Must be verifiable as a source authority |
+-* For examples of what these are, see: https://guides.loc.gov/municipal-codes/current-municipal-codes, accessed 11/23/2024
+
+
+### 1.3 Input Types
+| Source Type | Characteristics                                             | Challenges                                                      |
+|-------------|-------------------------------------------------------------|-----------------------------------------------------------------|
+| HTML               | - Dynamic loading<br>- Nested navigation<br>- Mixed content | - JavaScript rendering<br>- Session handling<br>- Rate limiting |
+| PDF                | - Scanned docs<br>- Text PDFs<br>- Mixed formats       | - OCR support<br>- Layout parsing<br>- Table and graph extraction    |
+| docx               |
+| xlsx, csv          |
+| php, etc.          |
+| Website Structures | - Municode<br>- American Legal<br>- CodePublishing<br>- LexisNexus| - Different structures<br>- Authentication<br>- Terms of service |
+
+
+## 1.4 Input Processing Requirements
+### 1.4.1 Source Validation
+   - Websites/Documents accessibile by permanent URL
+   - Content completeness
+   - Navigation structure
+   - Monthly update frequency
+
+### 1.4.2 Content Extraction Validation
+   - Complete code hierarchy captured
+   - No missing sections
+   - Images/tables parsed and stored properly
+   - PDF, presentational xlsx text extraction quality
+
+### 1.4.3 Data Cleaning Validation
+   - Document artifacts removed
+   - Proper section numbering
+   - Consistent formatting
+   - Reference integrity
+
+### 1.4.4 Storage Requirements
+   - SQL schema for hierarchical legal code structure
+   - Version control for amendments
+   - Metadata tracking (source URL, last updated, etc.)
+   - Efficient querying capabilities
+   - Storage optimization for text data
+
+### 1.4.5 Processing Constraints
+   - Respectful crawling (rate limits, robots.txt)
+   - Handle site downtime/failures gracefully
+   - Process different content formats (HTML, PDF, DOC, XLSX)
+   - Scale across thousands of jurisdictions, potential to tens of thousands.
 
 
 
-2. Preprocessing
-   - Non-text character removal (e.g. images, emojis, etc.)
-   - Whitespace normalization
-   - Encoding standardization
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 1.4 Output
+### 1.4.1 Ouput Specification
+| Output Type      | Format               | Performance Target |
+|------------------|----------------------|--------------------|
+| API Response     | JSON/XML/YAML/TXT    | <200ms response    |
+| Processed Codes  | Structured Database  | Monthly updates    |
+| Version History  | Git-like changelog   | Unlimited history  |
+
+
+## 1.5 Core Constraints
+- Rate limiting: Max 1 request/second per jurisdiction
+- Storage: Expected 500GB/year growth **TODO Needs to be estimated. This seems like it's too largs**
+- Compliance: Must maintain original text alongside cleaned version
+- Availability: 99.9% uptime for API
+
+
+## 1.6 Primary Use Cases
+### 1.6.1. Legal Research
+- Search across jurisdictions
+- Compare versions over time
+### 1.6.2. Compliance Monitoring
+- Track changes in specific areas
+- Receive notifications of updates
+### 1.6.3. Data Analysis
+- Cross-jurisdictional analysis
+- Trend identification
+### 1.6.4. LLM Fodder
+- 
+
+
 
 ## 1.4 Outputs
 
