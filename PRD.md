@@ -109,7 +109,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 |------------------|--------------------------------------------------------------------------|-----------------------------------------|
 | Description      | Table with all national incorporated places and counties in US¹          | Active, non-tribal communities only     |
 | Format           | CSV file, MySQL Database                                                 | N/A                                     |
-| Size             | 23,089 data points²                                                      | Legal codes must be available online    |
+| Size             | 22,899 data points²                                                      | Legal codes must be available online    |
 | Delivery Methods | - API endpoint<br>- File download                                        | File types: Restful API, XLSX, CSV      |
 | Source Authority | - State of Iowa<br>- U.S. Geological Survey                              | N/A                                     |
 - 1: For US government definition of census-designated places, see: https://www2.census.gov/geo/pdfs/reference/GARM/Ch9GARM.pdf, accessed 11/23/2024

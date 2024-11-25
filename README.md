@@ -4,7 +4,7 @@
 
 ## Overview
 3rd version of scrape_the_law, per Endo's comments and critiques.
-scrape_the_law_mk3 is a web scraping system to collect municipal legal codes from US cities/counties and store them in a structured SQL database.
+scrape_the_law_mk3 is a web scraping system to collect municipal legal codes from all 22,899 US cities and counties and store them in a structured SQL database.
 
 ## Key Features
 - Extract legal documents from official government or government-contracted websites and databases.
