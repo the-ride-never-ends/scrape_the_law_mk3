@@ -1,4 +1,6 @@
-# scrape_the_law_mk3
+# Program: scrape_the_law_mk3
+# Authors: Kyle Rose, Claude 3.5 Sonnet
+
 
 ## Overview
 3rd version of scrape_the_law, per Endo's comments and critiques.
