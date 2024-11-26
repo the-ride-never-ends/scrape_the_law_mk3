@@ -13,6 +13,7 @@ prompts/
 
 
 # IDE files
+.vs/
 .vscode/
 .idea/
 *.sublime-project

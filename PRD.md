@@ -1,18 +1,46 @@
 # Program: scrape_the_law_mk3
 **Version: 0.1.1**<br>
-**Authors: Kyle Rose, Claude 3.5 Sonnet**
+**Authors: Kyle Rose, Claude 3.5 Sonnet, Codestral**
 
-## Table of Contents
+# Table of Contents
+
 1. Problem Definition
-- 1.1 Objective
-- 1.2 Seed Dataset Specifications
-- 1.3 Legal Text Source Specifications
-- 1.4 Input Type Specifications
-2. Requirements Matrix TODO 
-3. System Requirements TODO
-4. Constraints TODO
-5. Implementation Phases TODO
-6. Dependencies TODO
+   1.1 Problem Statement
+   1.2 Objective
+   1.3 Global Success Metrics
+   1.4 Success Metrics by Stakeholder Type
+   1.5 Seed Dataset Specifications
+   1.6 Legal Document Source Specifications
+   1.7 Input Processing Requirements
+   1.8 Inputs
+      1.8.1 Input Type Specifications
+      1.8.2 Input Processing Requirements
+   1.9 Output
+      1.9.1 Output Specifications
+      1.9.2 Output Schema
+   1.10 Risk Assessment
+
+2. Success Criteria
+   2.1 Minimum Viable Product (MVP)
+   2.2 MVP Timeline
+
+3. Scope Definition
+   3.1 In Scope
+   3.2 Explicitly Out of Scope
+
+4. Primary Use Cases
+5. System Requirements
+   5.1 Performance Requirements
+   5.2 Hardware Requirements
+6. Constraints
+   6.1 Business Constraints
+   6.2 Technical Constraints
+7. Implementation Phases
+8. Dependencies
+   8.1 Software Dependencies
+   8.2 Third-Party Services
+
+9. Requirements Matrix: MVP
 
 
 ## NOTE: Termonology Shorthand
@@ -20,7 +48,7 @@ For the sake of brevity, the following shorthand will be used where it does not 
 | Termonology                        | Shorthand                  |
 |------------------------------------|----------------------------|
 | 'incorporated places and counties' | 'cities'.                  |
-| 'legal text', 'legal document'     | 'law'                      |
+| 'legal text', 'legal document'     | 'law'/'laws'               |
 | 'documents'                        | 'docs' when not in header. |
 | 'gigabytes'                        | 'GB'                       |
 | 'large language model'             | 'LLM'                      |
@@ -39,15 +67,30 @@ Per the US Library of Congress, there currently does not exist a single reposito
 
 ## 1.2 Objective
 Build a web scraping system to collect municipal legal codes from US cities/counties and store them in a structured database. The system will:
-- Extract legal documents from official government or government-contracted websites and databases.
+- Extract laws from official government or government-contracted websites and databases.
 - Parse and standardize raw content into tabular data with metadata
 - Store in a database with proper relationships and versioning
 - Maintain version history and track code updates/amendments
 - Handle different website structures and content formats
 
-## 1.3 Success Metrics by Stakeholder Type
 
-### 1.3.1 Legal/Government Stakeholders
+### 1.3 Global Success Metrics
+| Category     | Metric                        | Minimum Target  | Optimal Target  | Measurement Method                                           |
+|--------------|-------------------------------|-----------------|-----------------|--------------------------------------------------------------|
+| Coverage     | % of US cities covered        | 50%             | 95%             | Codes available / Total # cities                             |
+| Accuracy     | Text accuracy vs. source      | 99%             | 99.99%          | Error rate per 1000 words                                    |
+| Completeness | Code section coverage         | 95%             | 99.99%          | Code Sections Available / Total # Code Sections              |
+| Transparency | Source attribution available  | 100%            | 100%            | Content with Metadata / Total Content                        |
+| Freshness    | Update lag time               | < 30 days       | < 7 days        | Update timestamp vs rate of change of versions               |
+| Availability | System uptime                 | 99%             | 99.99%          | Time available over a rolling 30-day period                  |
+| Performance  | Average query response time   | < 2s            | < 200ms         | API response timing                                          |
+| Consistency  | Format standardization        | 95%             | 99.99%          | Random sample of content chunks vs pre-defined standard      |
+| Scalability  | Data growth handling          | +200GB per year | +500GB per year | System performance monitoring                                |
+| Reliability  | Error rate in data processing | < 1%            | < 0.1%          | Error rate per 1000 content chunks                           |
+
+## 1.4 Success Metrics by Stakeholder Type
+
+### 1.4.1 Legal/Government Stakeholders
 | Stakeholder | Primary Needs | Metric | Target | Measurement Method |
 |-------------|--------------|---------|---------|-------------------|
 | Lawyers | - Fast access to relevant codes<br>- Accuracy of legal text<br>- Version history | - Search response time<br>- Text accuracy rate<br>- Version tracking completeness | - < 2s search time<br>- 99.9% accuracy<br>- 100% version coverage | - API response timing<br>- Random sample audit<br>- Version history validation |
@@ -56,7 +99,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | City Planners | - Zoning regulations<br>- Development guidelines<br>- Environmental regulations | - Spatial data integration<br>- Code visualization accuracy<br>- Environmental compliance tracking | - 90% spatial integration<br>- 95% visualization accuracy<br>- 100% env. tracking | - GIS validation<br>- Visual audit<br>- Compliance checks |
 
 
-### 1.3.2 Business/Industry Stakeholders
+### 1.4.2 Business/Industry Stakeholders
 | Stakeholder | Primary Needs | Metric | Target | Measurement Method |
 |-------------|--------------|---------|---------|-------------------|
 | Business Owners | - Compliance guidance<br>- Plain language summaries<br>- Jurisdiction coverage | - Jurisdictional coverage<br>- Update timeliness<br>- Code accessibility | - 80% jurisdiction coverage<br>- < 30 day update lag<br>- > 95% availability | - Coverage tracking<br>- Update monitoring<br>- Uptime monitoring |
@@ -65,7 +108,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Small Business Associations | - Simplified compliance guides<br>- Cost impact analysis<br>- Local variation tracking | - Guide clarity<br>- Cost assessment accuracy<br>- Variation detection | - 90% clarity rating<br>- 95% cost accuracy<br>- 98% variation detection | - User feedback<br>- Cost validation<br>- Variation audit |
 
 
-### 1.3.3 Research/Academic Stakeholders
+### 1.4.3 Research/Academic Stakeholders
 | Stakeholder | Primary Needs | Metric | Target | Measurement Method |
 |-------------|--------------|---------|---------|-------------------|
 | Legal Scholars | - Historical analysis<br>- Pattern identification<br>- Complete metadata | - Historical depth<br>- Metadata completeness<br>- Citation accuracy | - 10 year history<br>- 98% metadata coverage<br>- 99% citation accuracy | - Historical audit<br>- Metadata validation<br>- Citation checking |
@@ -73,7 +116,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Academic Institutions | - Research datasets<br>- Teaching materials<br>- Citation standards | - Dataset completeness<br>- Educational usefulness<br>- Citation accuracy | - 99% completeness<br>- 90% usefulness rating<br>- 100% citation accuracy | - Dataset validation<br>- User surveys<br>- Citation checks |
 
 
-### 1.3.4 Public Interest/Advocacy Stakeholders
+### 1.4.4 Public Interest/Advocacy Stakeholders
 | Stakeholder | Primary Needs | Metric | Target | Measurement Method |
 |-------------|---------------|--------|--------|--------------------|
 | Anti-corruption Activists | - Transparency metrics<br>- Change tracking<br>- Public accessibility | - Change detection rate<br>- Public access rate<br>- Update transparency | - 100% change tracking<br>- 100% public access<br>- < 24hr update notice | - Change log audit<br>- Access monitoring<br>- Update timing tracking |
@@ -82,26 +125,11 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Journalists | - Quick fact verification<br>- Historical context<br>- Source attribution | - Search accuracy<br>- Historical coverage<br>- Citation completeness | - 99% search precision<br>- 10 year history<br>- 100% attribution | - Search testing<br>- Timeline validation<br>- Citation audit |
 
 
-### 1.3.5 Technical Stakeholders
+### 1.4.5 Technical Stakeholders
 | Stakeholder | Primary Needs | Metric | Target | Measurement Method |
 |-------------|--------------|---------|---------|-------------------|
 | Software Developers | - API stability<br>- Documentation quality<br>- Data format consistency | - API versioning<br>- Doc completeness<br>- Schema validation | - 99.9% API stability<br>- 100% doc coverage<br>- 100% schema compliance | - Version monitoring<br>- Doc coverage audit<br>- Schema validation |
 | AI Researchers | - Clean training data<br>- Consistent formatting<br>- Ground truth annotations | - Data cleaning quality<br>- Format standardization<br>- Annotation accuracy | - 99.9% data cleanliness<br>- 100% format compliance<br>- 98% annotation accuracy | - Data quality audit<br>- Format validation<br>- Annotation verification |
-
-
-### 1.4 Global Success Metrics
-| Category      | Metric                         | Minimum Target      | Optimal Target      | Measurement Method            |
-|---------------|--------------------------------|---------------------|---------------------|-------------------------------|
-| Coverage      | % of US municipalities covered | 50%                 | 95%                 | Geographic coverage analysis  |
-| Accuracy      | Text accuracy vs. source       | 99%                 | 99.99%              | Random sample comparison      |
-| Freshness     | Update lag time                | < 30 days           | < 7 days            | Update timestamp analysis     |
-| Availability  | System uptime                  | 99%                 | 99.99%              | Continuous monitoring         |
-| Performance   | Average query response time    | < 2s                | < 200ms             | API response timing           |
-| Completeness  | Code section coverage          | 95%                 | 99.99%              | Section validation            |
-| Transparency  | Source attribution rate        | 100%                | 100%                | Metadata audit                |
-| Consistency   | Format standardization         | 95%                 | 99.99%              | Schema validation             |
-| Scalability   | Data growth handling           | 20% annual increase | 50% annual increase | System performance monitoring |
-| Reliability   | Error rate in data processing  | < 1%                | < 0.1%              | Error log analysis            |
 
 
 ## 1.5 Seed Dataset Specifications
@@ -130,71 +158,6 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 - 1: For examples, see: https://guides.loc.gov/municipal-codes/current-municipal-codes, accessed 11/23/2024
 
 
-## 1.8 Inputs
-### 1.8.1 Input Type Specifications
-| Source Type | Characteristics                                             | Challenges                                                        |
-|-------------|-------------------------------------------------------------|-------------------------------------------------------------------|
-| HTML        | - Dynamic loading<br>- Nested navigation<br>- Mixed media content | - JavaScript rendering<br>- Session handling<br>- Rate limiting   |
-| PDF         | - Scanned/flat formats<br>- Text PDFs<br>- Mixed media content            | - OCR for parsing flat files<br>- Layout parsing<br>- Table and graph extraction |
-| DOCX, DOC   | - Word-specific formatting<br>- Embedded images and tables<br>| - Parsing complex formatting<br>- Extracting metadata<br>- Tracking changes |
-| XLSX, CSV   | - Diverse Formats<br>- Different Use Cases<br>- Multiple sheets<br>- Mixed media content | - Parsing formulas<br>- Handling merged cells<br>- Interpreting data types<br>- Table and graph extraction |
-| PHP, etc.   | - Server-side rendering<br>- Dynamic content generation<br>- Database interactions | - Handling server-side logic<br>- Session management<br>- Security considerations |
-| XML, JSON APIs | - Structured data format<br>- Authentication requirements<br>- Rate limits | - API version changes<br>- Error handling<br>- Data synchronization |
-| GIS, Maps   | - Server-side rendering<br>- Dynamic content generation<br>- Parsing purely visual data<br>- Parsing spatial data | - Handling server-side logic<br>- Session management<br>- Security considerations |
-| JPEG, PNG, etc. | | |
-| Powerpoint | | |
-| Website Structures | - Municode<br>- American Legal<br>- CodePublishing<br>- LexisNexus<br>- Various Government Websites<br>| - Different structures of varying complexity<br>- Authentication<br>- Terms of service |
-
-
-## 1.8.2 Input Processing Requirements
-### 1.8.2.1 Source Validation
-   - Website/Doc sources accessibile by permanent, third-party URL (e.g. Internet Archive, Libgen).
-   - Docs are only scraped from government, government-affiliated, or government contracted sources.
-   - Monthly update frequency
-
-### 1.8.2.2 Content Extraction Validation
-   - Complete code hierarchy captured
-   - No missing sections
-   - Images/tables parsed and stored properly
-   - Ensure extraction quality from difficult-to-parse docs like flat PDFs, presentational XLSX, etc. 
-
-### 1.8.2.3 Data Cleaning Validation
-   - Docs artifacts removed or corrected
-   - Proper section numbering
-   - Consistent formatting
-   - Flag and store metadata on overlapping or conflicting Docs.
-   - Option to perform manual audits by comparing randomly sampled raw and processed Docs formats.
-
-### 1.8.2.4 Storage Requirements
-   - Detailed SQL schema for hierarchical legal code structure
-   - Version control for amendments
-   - Metadata tracking (source URL, last updated, etc.)
-   - Efficient querying capabilities
-   - Storage optimization for text data.
-
-### 1.8.2.5 Version Control Requirements
-   - Full database refresh annually.
-   - Monthly updates on a per text basis.
-   - Checksums for downloaded and processed datum via SHA256 hash.
-   - Amendments linked via metadata (source hashes, page #, creation dates, etc.)
-   - Accuracy audits via random sampling.
-   - Version control system for tracking changes in laws over time.
-   - Update notifications: Alert system for users when relevant laws are updated by comparing versions gathered over time.
-
-### 1.8.2.6 Robustness Requirements
-   - Respectful crawling (rate limits, robots.txt).
-   - Handle site downtime/failures gracefully.
-   - System to flag, log, and report errors in any part of the process, specifically Network, Query, Cleaning, and Validation Errors.
-   - Process different content formats (HTML, PDF, DOC, XLSX).
-   - Scale across thousands of jurisdictions, potential for arbitrary # of jurisdictions.
-
-### 1.8.2.7 Performance Requirements ( per Section 1.5.1 Minimum Viable Product)
-   - Extraction of all codes from a repo in under 1 week
-   - Parallel scraping support
-   - CPU Usage: 1 Core
-   - Memory Usage: 4 GBs
-   - Database Query Performance: 2 GBs
-   - API response times: <= 1 second
 
 
 ### 1.5 Success Criteria
@@ -202,12 +165,12 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Feature                        | Description                          | Minimum Success Criteria | Optimal Success Criteria |
 |--------------------------------|--------------------------------------|--------------------------|--------------------------|
 | Scraping Functionality         | Fully scrape 1 law repo              |  Download all raw versions legal docs for each city on the repo |- Download all repos | <br>- Completes in < 1 week<br> |
-| Docs Type Support              | Extraction, cleaning, and validation of law docs | -  Support extraction, validation, and cleaning for HTML, text PDFs <br>- Flags non-textual docs such as graphs, tables, and images |
+| Docs Type Support              | Extraction, cleaning, and validation of law docs | -  Support extraction, validation, and cleaning for HTML, text PDFs <br>- Flags non-textual docs like graphs, tables, and images |
 | Persistant Docs Storage        | Database of raw and cleaned Docs | - Efficiently stores plain-text copies of HTML and PDF Docs <br>- Handles UTF-8 encoding |
 | Docs Extraction Rate           | # of docs scraped per hour | 5 docs per hour. | 100 docs per hour. |
 | Docs Conversion Error Rate     | Errors in Docs extraction, cleaning, and validation. |- Minimum: 90% <br> - Optimal: 100%
-| Error Handling                 | Input extraction, validation and error reporting | - Catches and reports common errors <br>- Provides clear error messages                                   |
-| Legal Compliance               | Alert user to legal notices from stakeholders | - Logs and alerts user to legal notices <br> - Automated take-down measures <br>                                  |
+| Error Handling                 | Input extraction, validation and error reporting | - Catches and reports common errors <br>- Provides clear error messages |
+| Legal Compliance               | Alert user to legal notices from stakeholders | - Logs and alerts user to legal notices <br> - Automated take-down measures <br> |
 
 
 ### 1.5.2 MVP Timeline
@@ -225,75 +188,131 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 
 
 ## 1.6 Scope Definition
-### 1.6.1 Explicitly Out of Scope
-| Feature                      | Description                                                                                                |
-|------------------------------|------------------------------------------------------------------------------------------------------------|
-| Real-time Gathering          | - Live Docs updates <br>- Websocket connections <br>- Real-time collaboration                          |
-| Advanced Features            | - Data Extraction <br>- Real-time interaction  <br>- Automated implementation <br>- Custom template creation |
-| Integration Features         | - CI/CD pipeline integration <br>- IDE plugins <br>- Direct repo management                          |
-| Authentication/Authorization | - User management <br>- Role-based access <br>- Multi-tenant support                                       |
+### 1.6.1 In Scope
+| Feature                      | Description                                                                                      |
+|------------------------------|--------------------------------------------------------------------------------------------------|
+| Data Collection              | - Web scraping from verified sources<br>- Periodic updates (e.g., monthly)<br>- Version tracking |
+| Data Processing              | - Text extraction from various formats (HTML, PDF, etc.)<br>- Basic data cleaning and formatting |
+| Data Storage                 | - Structured database for legal codes<br>- Metadata storage (source, date, etc.)                 |
+| Basic Search                 | - Keyword and jurisdiction-based search functionality                                            |
+| API Access                   | - Read-only access to stored data<br>- Basic query parameters                                    |
+| Error Handling               | - Basic error logging and reporting                                                              |
+| Legal Compliance             | - Source attribution<br>- Compliance with terms of service for source websites                   |
 
-
-## 1.7 Output
-### 1.7.1 Ouput Specifications
-| Description       | Format               | Performance Target                    |
-|-------------------|----------------------|---------------------------------------|
-| API Response      | JSON/XML/YAML/TXT    |- <200ms response<br>- 99.9% uptime    |
-| Unprocessed Codes | MySQL Database       | 20 GB on Disk <br>                    | 
-| Processed Codes   | MySQL Database       | 10 GB on Disk <br>                    |
-| Version History   | MySQL Database       | 12 Months of Changes                  |
-| Data Quality      |  | |
-| Legal Compliance  |  |  |
-
-
-### 1.7.2 Output Schema
-
+### 1.6.2 Explicitly Out of Scope
+| Feature                      | Description                                                                                                  |
+|------------------------------|--------------------------------------------------------------------------------------------------------------|
+| Real-time Gathering          | - Live document updates<br>- Websocket connections<br>- Real-time collaboration                              |
+| Advanced Features            | - Data extraction beyond basic text<br>- Automated legal analysis<br>- Custom template creation              |
+| Integration Features         | - CI/CD pipeline integration<br>- IDE plugins<br>- Direct repository management                              |
+| Authentication/Authorization | - User management<br>- Role-based access<br>- Multi-tenant support                                           |
+| Advanced Search              | - Natural language processing<br>- Semantic search capabilities                                              |
+| Data Interpretation          | - Legal analysis or interpretation of collected data                                                         |
+| User Interface               | - Graphical user interface for data exploration (beyond basic API)                                           |
 
 
 
 
-## 1.9 Use cases:
-1. Constructing a dataset of legal codes for extracting legal datapoint manually or via LLM.
-   - Key Metric: Size of Dataset
-2. Legal researchers: Analyze trends in local legislation across jurisdictions.
-   - Key Metric: Accuracy of Cleaned Text to Source Text
-3. Legal professionals: Quick reference for local laws on specific topics.
-   - Key Metric: Accuracy of Cleaned Text to Source Text
-4. ML researchers: Train models on local legal language and structures.
-   - Key Metric: Size
-5. Policy analysts: Compare local laws across different regions.
-   - Key Metric: Accuracy of Cleaned Text to Source Text.
+## 1.10 Risk Assessment
+### 1.10.1 Technical Risks
+| Risk                    | Probability | Impact | Mitigation Strategy              |
+|-------------------------|-------------|--------|----------------------------------|
+| Data corruption         | Low         | High   | Regular backups, checksums       |
+| System downtime         | Medium      | High   | Redundancy, monitoring           |
+| Performance degradation | Medium      | Medium | Load testing, optimization       |
+| Database scalability    | Low         | High   | Sharding, indexing               |
+| API failures            | Medium      | Medium | Circuit breakers, fallbacks      |
+
+### 1.10.2 Legal Risks
+| Risk                        | Probability | Impact | Mitigation Strategy                   |
+|-----------------------------|-------------|--------|---------------------------------------|
+| Copyright violation         | Medium      | High   | Terms monitoring, takedown process    |
+| Data privacy breach         | Low         | High   | Encryption, access controls           |
+| Terms of service violation  | Medium      | Medium | Rate limiting, compliance checks      |
+| Regulatory non-compliance   | Low         | High   | Legal review, documentation           |
+| License violations          | Low         | Medium | License audit, compliance tracking    |
+
+### 1.10.3 Resource Risks
+| Risk               | Probability | Impact | Mitigation Strategy                |
+|--------------------|-------------|--------|------------------------------------|
+| Storage capacity   | Medium      | Medium | Monitoring, cleanup jobs           |
+| Processing power   | High        | Medium | Auto-scaling, optimization         |
+| Network bandwidth  | Medium      | High   | CDN, caching                       |
+| Cost overrun       | High        | High   | Budget monitoring, optimization    |
+| Service quotas     | Low         | Medium | Quota monitoring, fallbacks        |
 
 
-# 2. Requirements Matrix TODO
 
-# 3. System Requirements TODO
 
-# 4. Constraints TODO
+# 2. Requirements Matrix: MVP
 
-## 4.1 Core Constraints TODO
-- Rate limiting: Max 1 request/second per jurisdiction
-- Storage: Expected 50GB/year growth **TODO Needs to be estimated. This seems like it's too large**
-- Compliance: Must maintain original text alongside cleaned version.
-- Availability: 99.9% uptime for API.
-- Recovery: Worst-case scenario data recovery implementation.
-- Data Retention: Permanent, with rapid take-down ability per legal requests.
+| Requirement ID | Description | Priority | Complexity | Status | Associated MVP Feature |
+|----------------|-------------|----------|------------|--------|------------------------|
+| REQ-001 | System shall fully scrape 1 law repository | High | High | Started | Scraping Functionality |
+| REQ-002 | System shall support extraction from HTML and text PDF formats | High | Medium | Started | Docs Type Support |
+| REQ-003 | System shall store raw and cleaned versions of laws | High | Medium | Started | Persistant Docs Storage |
+| REQ-004 | System shall extract at least 5 docs per hour | High | Medium | Not Started | Docs Extraction Rate |
+| REQ-005 | System shall have less than 10% error rate in doc conversion | High | Medium | Not Started | Docs Conversion Error Rate |
+| REQ-006 | System shall catch and report common errors | Medium | Medium | Started | Error Handling |
+| REQ-007 | System shall log and alert user to legal notices | High | Low | Not Started | Legal Compliance |
+| REQ-008 | System shall flag non-textual content like graphs, tables, and images | Medium | Medium | Not Started | Docs Type Support |
+| REQ-009 | System shall efficiently store plain-text copies of HTML and PDF docs | High | Medium | Started | Persistant Docs Storage |
+| REQ-010 | System shall handle UTF-8 encoding | Medium | Low | Started | Persistant Docs Storage |
+| REQ-011 | System shall provide clear error messages | Medium | Low | Started | Error Handling |
+| REQ-012 | System shall have automated take-down measures | High | Medium | Not Started | Legal Compliance |
+
+
+# 4. Constraints
+
+## 4.1 Business Constraints
+### 4.1.1 Budget Limits
+- Initial development budget: $0
+- Monthly operational budget: $0
+- Cloud services budget: None (open-source solutions preferred)
+- Contingency fund: None
+
+### 4.1.2 Timeline Restrictions
+- Project kickoff: December 1, 2024
+- MVP delivery: December 31st, 2024 (1 month)
+- Full system launch: June 30, 2025 (6 months)
+- Quarterly review and update cycles
+
+### 4.1.3 Resource Availability
+- Development team: 1 part-time developer i.e. me
+- Infrastructure: Limited to developer's computer.
+- Legal counsel: NA
+- Data storage: Initial capacity of 500GB, scalable to 5TB
+
+### 4.1.4 Regulatory Requirements
+- GDPR compliance for handling any EU-related data
+- CCPA compliance for California residents' data
+- SOC 2 Type II certification within 12 months of launch
+- Adherence to Open Data principles as defined by the Open Knowledge Foundation
+
+### 4.1.5 Stakeholder Expectations
+- Monthly progress reports to project sponsors
+- Bi-weekly demos to key stakeholders
+- User acceptance testing with a panel of 10 legal professionals
+
+### 4.1.6 Scalability Constraints
+- System must support up to 10 unique monthly users
+- Database must efficiently handle up to 10 million docs
+- Database must efficiently handle expected 50GB/year growth 
+- API must support up to 1,000 requests per minute
+
+### 4.1.7 Maintenance and Support
+- 99.9% uptime guarantee during business hours (9am-5pm EST)
+- 24/7 automated monitoring with alerts
+- Maximum 4-hour response time for critical issues
+- Implementations for worst-case scenario data recovery must be in place.
+
+### 4.1.8 Licensing and Partnerships
+- All third-party libraries must have compatible open-source licenses
+- No exclusive partnerships that limit data accessibility
+
+
 
 # 5. Implementation Phases TODO
-
-
-# 6. Dependencies TODO
-
-
-
-
-
-
-
-
-
-
-
 
 
 

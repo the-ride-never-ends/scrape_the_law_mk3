@@ -5,3 +5,4 @@ pytest-playwright
 pyyaml
 requests
 selenium
+playwright

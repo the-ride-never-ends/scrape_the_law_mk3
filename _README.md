@@ -414,3 +414,136 @@ Outputs: A MySQL database of all local legal codes in the US related to the inpu
 12. Scalability - TODO
 13. Security considerations - TODO
 14. Documentation needs - TODO
+
+
+
+
+
+
+
+
+
+
+
+
+| Primary Needs                    | Data Type                  |
+|----------------------------------|----------------------------|
+| Accessibility compliance         | Binary                     |
+| Accuracy of legal text           | Real-Valued Additive       |
+| Amendment tracking               | Software Feature           |
+| API accessibility                | Binary                     |
+| API stability                    | Binary                     |
+| Building codes                   | Categorical                |
+| Bulk downloads                   | Binary                     |
+| Change tracking                  | Software Feature           |
+| Citation standards               | Categorical                |
+| Clean training data              | Software Feature           |
+| Code relationships               | Other                      |
+| Complete metadata                | Software Feature           |
+| Compliance guidance              | Software Feature           |
+| Compliance tracking              | Software Feature           |
+| Compliance verification          | Software Feature           |
+| Consistent formatting            | Software Feature           |
+| Cost impact analysis             | Real-Valued Additive       |
+| Cross-agency coordination        | Other                      |
+| Cross-jurisdiction comparison    | Other                      |
+| Data format consistency          | Categorical                |
+| Data standardization             | Process                    |
+| Development guidelines           | Categorical                |
+| Discrimination detection         | Software Feature           |
+| Documentation quality            | Ordinal                    |
+| Environmental regulations        | Categorical                |
+| Equal protection analysis        | Other                      |
+| Fast access to relevant codes    | Real-Valued Multiplicative |
+| Ground truth annotations         | Software Feature           |
+| Historical analysis              | Time-series                |
+| Historical context               | Time-series                |
+| Impact assessments               | Categorical                |
+| Jurisdiction comparison          | Software Feature           |
+| Jurisdiction coverage            | Categorical                |
+| Land use regulations             | Categorical                |
+| Local variation tracking         | Software Feature           |
+| Pattern identification           | Other                      |
+| Permit requirements              | Categorical                |
+| Plain language summaries         | Software Feature           |
+| Policy impact analysis           | Software Feature           |
+| Public accessibility             | Binary                     |
+| Quick fact verification          | Software Feature           |
+| Regulatory compliance            | Other                      |
+| Research datasets                | Other                      |
+| Risk assessment                  | Other                      |
+| Simplified compliance guides     | Software Feature           |
+| Source attribution               | Software Feature           |
+| Teaching materials               | Other                      |
+| Transparency metrics             | Ordinal                    |
+| Version history                  | Count                      |
+| Zoning regulations               | Categorical                |
+
+
+
+
+
+
+
+
+
+
+
+
+
+| Stakeholder | Primary Needs | Data Type: Statistical | Metric | Target | Measurement Method |
+|-------------|---------------|------------------------|--------|--------|--------|
+
+
+
+| Civil Rights Organizations | Accessibility compliance | Binary | WCAG 2.1 Level AA compliance (Yes/No)|
+| Lawyers | Accuracy of legal text | Real-Valued Additive | Error rate per 1000 words |
+| Lawmakers | Amendment tracking | Feature | Feature is present |
+| Social Science Researchers | API accessibility | Real-Valued Additive | Uptime percentage over rolling 30-day period |
+| Software Developers | API stability | Real-Valued Additive | Percentage of public access uptime over rolling 30-day period |
+| Real Estate Developers | Building codes | Real-Valued Additive | Coverage Rate (%) |
+| Social Science Researchers | Bulk downloads | Feature | Feature is present |
+| Anti-corruption Activists | Change tracking | Feature | Feature is present |
+| Academic Institutions | Citation standards | Real-Valued Additive | Percentage of correct citations per style |
+| AI Researchers | Clean training data | Feature | Feature is present |
+| Lawmakers | Code relationships | Other | Percentage of possible connections implemented |
+| Legal Scholars | Complete metadata | Real-Valued Additive | Metadata Coverage Rate (%) |
+| Business Owners | Compliance guidance | Feature | Feature is present |
+| Environmental Groups | Compliance tracking | Feature | Feature is present |
+| Insurance Companies | Compliance verification | Feature | Feature is present |
+| AI Researchers | Consistent formatting | Feature | Feature is present |
+| Small Business Associations | Cost impact analysis | Feature | Feature is present |
+| Government Agencies | Cross-agency coordination | Other | Percentage of cross-agency references implemented |
+| Lawmakers | Cross-jurisdiction comparison | Other | Percentage of required cross-references implemented |
+| Software Developers | Data format consistency | Real-Valued Additive | Coverage Rate (%) |
+| Social Science Researchers | Data standardization | Feature | Feature is present |
+| City Planners | Development guidelines | Real-Valued Additive | Coverage Rate (%) |
+| Civil Rights Organizations | Discrimination detection | Feature | Feature is present |
+| Software Developers | Documentation quality | Ordinal | 1-5 scale with defined criteria for each level |
+| City Planners | Environmental regulations | Real-Valued Additive | Coverage Rate (%) |
+| Environmental Groups | Environmental regulations | Real-Valued Additive | Coverage Rate (%) |
+| Civil Rights Organizations | Equal protection analysis | Real-Valued Additive | Coverage Rate (%) |
+| Lawyers | Fast access to relevant codes | Binary | Average response time in milliseconds under <200ms (yes/no) |
+| AI Researchers | Ground truth annotations | Feature | Feature is present |
+| Legal Scholars | Historical analysis | Count | Number of Code Versions Available |
+| Journalists | Historical context | Real-Valued Additive | Coverage Rate (%) |
+| Environmental Groups | Impact assessments | Feature | Feature is present |
+| Insurance Companies | Jurisdiction comparison | Feature | Feature is present |
+| Business Owners | Jurisdiction coverage | Real-Valued Additive | Coverage Rate (%) |
+| Real Estate Developers | Land use regulations | Real-Valued Additive | Coverage Rate (%) |
+| Small Business Associations | Local variation tracking | Feature | Feature is present |
+| Legal Scholars | Pattern identification | Time-series | Rate of change in Coverage Rate (%) |
+| Real Estate Developers | Permit requirements | Real-Valued Additive | Coverage Rate (%) |
+| Business Owners | Plain language summaries | Feature | Feature is present |
+| Government Agencies | Policy impact analysis | Feature | Feature is present |
+| Anti-corruption Activists | Public accessibility | Binary | 24/7 public access availability (Yes/No) |
+| Journalists | Quick fact verification | Feature | Feature is present |
+| Government Agencies | Regulatory compliance | Binary | Automated compliance validation system operational (Yes/No) |
+| Academic Institutions | Research datasets | Feature | Feature is present |
+| Insurance Companies | Risk assessment | Ordinal | 1-5 scale with defined risk criteria |
+| Small Business Associations | Simplified compliance guides | Feature | Feature is present |
+| Journalists | Source attribution | Real-Valued Additive | Coverage Rate (%) |
+| Academic Institutions | Teaching materials | Feature | Feature is present |
+| Anti-corruption Activists | Transparency metrics | Feature | Feature is present |
+| Lawyers | Version history | Feature | Feature is present |
+| City Planners | Zoning regulations | Real-Valued Additive | Coverage Rate (%) |
