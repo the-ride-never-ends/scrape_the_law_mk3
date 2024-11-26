@@ -5,42 +5,42 @@
 # Table of Contents
 
 1. Problem Definition
-   1.1 Problem Statement
-   1.2 Objective
-   1.3 Global Success Metrics
-   1.4 Success Metrics by Stakeholder Type
-   1.5 Seed Dataset Specifications
-   1.6 Legal Document Source Specifications
-   1.7 Input Processing Requirements
-   1.8 Inputs
-      1.8.1 Input Type Specifications
-      1.8.2 Input Processing Requirements
-   1.9 Output
-      1.9.1 Output Specifications
-      1.9.2 Output Schema
-   1.10 Risk Assessment
-
+   - 1.1 Problem Statement
+   - 1.2 Objective
+   - 1.3 Global Success Metrics
+   - 1.4 Success Metrics by Stakeholder Type
+      - 1.4.1 Legal/Government Stakeholders
+      - 1.4.2 Business/Industry Stakeholders
+      - 1.4.3 Research/Academic Stakeholders
+      - 1.4.4 Public Interest/Advocacy Stakeholders
+      - 1.4.5 Technical Stakeholders
 2. Success Criteria
-   2.1 Minimum Viable Product (MVP)
-   2.2 MVP Timeline
-
+   - 2.1 Minimum Viable Product (MVP)
+   - 2.2 MVP Timeline
 3. Scope Definition
-   3.1 In Scope
-   3.2 Explicitly Out of Scope
-
-4. Primary Use Cases
-5. System Requirements
-   5.1 Performance Requirements
-   5.2 Hardware Requirements
+   - 3.1 In Scope
+   - 3.2 Explicitly Out of Scope
+4. Risk Assessment
+   - 4.1 Technical Risks
+   - 4.2 Legal Risks
+   - 4.3 Resource Risks
+5. Requirements Matrix: MVP
 6. Constraints
-   6.1 Business Constraints
-   6.2 Technical Constraints
+   - 6.1 Business Constraints
+      - 6.1.1 Budget Limits
+      - 6.1.2 Timeline Restrictions
+      - 6.1.3 Resource Availability
+      - 6.1.4 Regulatory Requirements
+      - 6.1.5 Stakeholder Expectations
+      - 6.1.6 Scalability Constraints
+      - 6.1.7 Maintenance and Support
+      - 6.1.8 Licensing and Partnerships
 7. Implementation Phases
-8. Dependencies
-   8.1 Software Dependencies
-   8.2 Third-Party Services
-
-9. Requirements Matrix: MVP
+   - 7.1 Phase 0: Planning & Setup
+   - 7.2 Phase 1: Core Scraping
+   - 7.3 Phase 2: Data Processing
+   - 7.4 Phase 3: Storage & Integration
+   - 7.5 Phase 4: MVP Completion
 
 
 ## NOTE: Termonology Shorthand
@@ -74,19 +74,20 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 - Handle different website structures and content formats
 
 
-### 1.3 Global Success Metrics
+### 1.3 Global Success Metrics, ordered by priority
 | Category     | Metric                        | Minimum Target  | Optimal Target  | Measurement Method                                           |
 |--------------|-------------------------------|-----------------|-----------------|--------------------------------------------------------------|
 | Coverage     | % of US cities covered        | 50%             | 95%             | Codes available / Total # cities                             |
 | Accuracy     | Text accuracy vs. source      | 99%             | 99.99%          | Error rate per 1000 words                                    |
 | Completeness | Code section coverage         | 95%             | 99.99%          | Code Sections Available / Total # Code Sections              |
 | Transparency | Source attribution available  | 100%            | 100%            | Content with Metadata / Total Content                        |
+| Reliability  | Error rate in data processing | < 1%            | < 0.1%          | Error rate per 1000 content chunks                           |
+| Consistency  | Format standardization        | 95%             | 99.99%          | Random sample of content chunks vs pre-defined standard      |
+| Scalability  | Data growth handling          | +200GB per year | +500GB per year | System performance monitoring                                |
 | Freshness    | Update lag time               | < 30 days       | < 7 days        | Update timestamp vs rate of change of versions               |
 | Availability | System uptime                 | 99%             | 99.99%          | Time available over a rolling 30-day period                  |
 | Performance  | Average query response time   | < 2s            | < 200ms         | API response timing                                          |
-| Consistency  | Format standardization        | 95%             | 99.99%          | Random sample of content chunks vs pre-defined standard      |
-| Scalability  | Data growth handling          | +200GB per year | +500GB per year | System performance monitoring                                |
-| Reliability  | Error rate in data processing | < 1%            | < 0.1%          | Error rate per 1000 content chunks                           |
+
 
 ## 1.4 Success Metrics by Stakeholder Type
 
@@ -132,36 +133,8 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | AI Researchers | - Clean training data<br>- Consistent formatting<br>- Ground truth annotations | - Data cleaning quality<br>- Format standardization<br>- Annotation accuracy | - 99.9% data cleanliness<br>- 100% format compliance<br>- 98% annotation accuracy | - Data quality audit<br>- Format validation<br>- Annotation verification |
 
 
-## 1.5 Seed Dataset Specifications
-| Attribute        | Specification                                                            | Bounds/Constraints                      |
-|------------------|--------------------------------------------------------------------------|-----------------------------------------|
-| Description      | Table with all national incorporated places and counties in US¹          | Active, non-tribal communities only     |
-| Format           | CSV file, MySQL Database                                                 | N/A                                     |
-| Size             | 22,899 data points²                                                      | Legal codes must be available online    |
-| Delivery Methods | - API endpoint<br>- File download                                        | File types: Restful API, XLSX, CSV      |
-| Source Authority | - State of Iowa<br>- U.S. Geological Survey                              | N/A                                     |
-- 1: For US government definition of census-designated places, see: https://www2.census.gov/geo/pdfs/reference/GARM/Ch9GARM.pdf, accessed 11/23/2024
-- 2: Source: https://data.iowa.gov/Boundaries/National-Incorporated-Places-and-Counties/djvt-gf3t/about_data, accessed 11/23/2024
-
-
-
-
-## 1.7 Legal Document Source Specifications
-| Attribute        | Specification                                          | Bounds/Constraints                       |
-|------------------|--------------------------------------------------------|------------------------------------------|
-| Description      | Docs with legal info                                   | Directly usable by an LLM                    |
-| Format           | See section 1.4 'Input Type Specifications'            | Convertible to UTF-8 plaintext |
-| Size             | Size in gigabytes                                      | Easily storable to disk |
-| Delivery Methods | - Direct extraction via scraping<br> - API endpoint<br>- File download  | See section 1.4: Input Type Specifications           |
-| Availability     |                                                        | Sources for docs are publically available online |
-| Source Authority | Government or government-contracted websites           | Must be verifiable as a source authority |
-- 1: For examples, see: https://guides.loc.gov/municipal-codes/current-municipal-codes, accessed 11/23/2024
-
-
-
-
-### 1.5 Success Criteria
-### 1.5.1 Minimum Viable Product (MVP)
+### 2 Success Criteria
+### 2.1 Minimum Viable Product (MVP)
 | Feature                        | Description                          | Minimum Success Criteria | Optimal Success Criteria |
 |--------------------------------|--------------------------------------|--------------------------|--------------------------|
 | Scraping Functionality         | Fully scrape 1 law repo              |  Download all raw versions legal docs for each city on the repo |- Download all repos | <br>- Completes in < 1 week<br> |
@@ -173,7 +146,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Legal Compliance               | Alert user to legal notices from stakeholders | - Logs and alerts user to legal notices <br> - Automated take-down measures <br> |
 
 
-### 1.5.2 MVP Timeline
+### 2.2 MVP Timeline
 | Feature                    | Phase # | Completion Date | Acceptance Criteria                                              | Status   |
 |----------------------------|---------|-----------------|------------------------------------------------------------------|----------|
 | **DROP DEAD DATE**         | N/A     | **12/31/2024**  | All minimum/acceptance completed                                 | NOT DONE |
@@ -187,8 +160,8 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Legal Compliance           | 4       | 12/31/2024      | Alert user to legal notices from stakeholders                    | NOT DONE |
 
 
-## 1.6 Scope Definition
-### 1.6.1 In Scope
+## 3 Scope Definition
+### 3.1 In Scope
 | Feature                      | Description                                                                                      |
 |------------------------------|--------------------------------------------------------------------------------------------------|
 | Data Collection              | - Web scraping from verified sources<br>- Periodic updates (e.g., monthly)<br>- Version tracking |
@@ -199,7 +172,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Error Handling               | - Basic error logging and reporting                                                              |
 | Legal Compliance             | - Source attribution<br>- Compliance with terms of service for source websites                   |
 
-### 1.6.2 Explicitly Out of Scope
+### 3.2 Explicitly Out of Scope
 | Feature                      | Description                                                                                                  |
 |------------------------------|--------------------------------------------------------------------------------------------------------------|
 | Real-time Gathering          | - Live document updates<br>- Websocket connections<br>- Real-time collaboration                              |
@@ -211,10 +184,8 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | User Interface               | - Graphical user interface for data exploration (beyond basic API)                                           |
 
 
-
-
-## 1.10 Risk Assessment
-### 1.10.1 Technical Risks
+## 4 Risk Assessment
+### 4.1 Technical Risks
 | Risk                    | Probability | Impact | Mitigation Strategy              |
 |-------------------------|-------------|--------|----------------------------------|
 | Data corruption         | Low         | High   | Regular backups, checksums       |
@@ -223,7 +194,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Database scalability    | Low         | High   | Sharding, indexing               |
 | API failures            | Medium      | Medium | Circuit breakers, fallbacks      |
 
-### 1.10.2 Legal Risks
+### 4.2 Legal Risks
 | Risk                        | Probability | Impact | Mitigation Strategy                   |
 |-----------------------------|-------------|--------|---------------------------------------|
 | Copyright violation         | Medium      | High   | Terms monitoring, takedown process    |
@@ -232,7 +203,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Regulatory non-compliance   | Low         | High   | Legal review, documentation           |
 | License violations          | Low         | Medium | License audit, compliance tracking    |
 
-### 1.10.3 Resource Risks
+### 4.3 Resource Risks
 | Risk               | Probability | Impact | Mitigation Strategy                |
 |--------------------|-------------|--------|------------------------------------|
 | Storage capacity   | Medium      | Medium | Monitoring, cleanup jobs           |
@@ -240,8 +211,6 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Network bandwidth  | Medium      | High   | CDN, caching                       |
 | Cost overrun       | High        | High   | Budget monitoring, optimization    |
 | Service quotas     | Low         | Medium | Quota monitoring, fallbacks        |
-
-
 
 
 # 2. Requirements Matrix: MVP
@@ -311,40 +280,136 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 - No exclusive partnerships that limit data accessibility
 
 
+# 5. Project Timeline
 
-# 5. Implementation Phases TODO
+## 5.1 Timeline Overview
 
+### Phase 0: Planning & Setup (Week 1: Dec 1-7)
+- **Documentation & Planning** [3 days]
+  - Complete PRD
+  - Define architecture
+  - Set up project repository
+  - Set up development environment
+  - SUCCESS: All core documentation complete
 
+### Phase 1: Core Scraping (Week 2: Dec 8-14)
+- **Basic Scraping Framework** [4 days]
+  - Implement HTML scraping
+  - Implement PDF extraction
+  - Set up error logging
+  - SUCCESS: Can download docs from one source
+- **Data Validation** [3 days]
+  - Implement basic validation
+  - Set up error reporting
+  - SUCCESS: Can validate downloaded content
 
+### Phase 2: Data Processing (Week 3: Dec 15-21)
+- **Content Processing** [4 days]
+  - Text extraction
+  - Basic cleaning
+  - Metadata extraction
+  - SUCCESS: Can process 5 docs/hour
+- **Error Handling** [3 days]
+  - Implement retry logic
+  - Add failure recovery
+  - SUCCESS: < 10% error rate
 
+### Phase 3: Storage & Integration (Week 4: Dec 22-28)
+- **Database Implementation** [4 days]
+  - Set up database schema
+  - Implement storage logic
+  - Add basic querying
+  - SUCCESS: Can store and retrieve docs
+- **System Integration** [3 days]
+  - Connect all components
+  - End-to-end testing
+  - SUCCESS: Full pipeline working
 
+### Phase 4: MVP Completion (Week 5: Dec 29-31)
+- **Final Testing & Documentation** [2 days]
+  - System testing
+  - Bug fixes
+  - Documentation updates
+  - SUCCESS: MVP meets all criteria
+- **Legal Compliance** [1 day]
+  - Implement takedown system
+  - Add attribution
+  - SUCCESS: System ready for use
 
-## 1.6 Primary Use Cases
-### 1.6.1. Legal Research
-- Search across jurisdictions
-- Compare versions over time
-### 1.6.2. Compliance Monitoring
-- Track changes in specific areas
-- Receive notifications of updates
-### 1.6.3. Data Analysis
-- Cross-jurisdictional analysis
-- Trend identification
-### 1.6.4. LLM Fodder
-- 
+## 5.2 Dependencies & Critical Path
 
+### Critical Path Items
+1. Basic scraping framework
+2. Content processing
+3. Database implementation
+4. System integration
 
+### Key Dependencies
+```mermaid
+graph TD
+    A[Planning] --> B[Basic Scraping]
+    B --> C[Data Validation]
+    C --> D[Content Processing]
+    D --> E[Error Handling]
+    E --> F[Database Implementation]
+    F --> G[System Integration]
+    G --> H[Final Testing]
+    H --> I[Legal Compliance]
+```
 
-## 1.4 Outputs
+## 5.3 Risk Factors
 
-### 14.1 Output Specifications
+### Timeline Risks
+- Holiday season impact (Dec 24-26)
+- Technical challenges scraping website
+- Potential technical challenges with PDF processing
+- Learning curve with new technologies
+- Unexpected legal compliance issues
 
-# 1. Get codes from LexisNexus (3,200 codes)
-# - 1.1 Make Chrome extension to scrape the pages you visit TODO See if it can be HTML instead of PDF
-# - 1.2 Go to law library and run the script
-# 2. Scrape Municode (3,528 codes)
-# - 2.1 Figure out API
-# - 2.2 Scrape via API
-# 3. Scrape American Legal (2,180 codes) TODO Ditto API
-# 4. Scrape General Code (1,601 codes) TODO Ditto API
-# 5. Get all the other websites (4,304)
-# - 5.1 General Crawler.
+### Mitigation Strategies
+1. Front-load critical work before holidays
+2. Build in 20% buffer time for each phase
+3. Have fallback solutions identified
+4. Keep scope strictly limited to MVP
+
+## 4. Progress Tracking
+
+### Weekly Milestones
+- Week 1: Documentation complete
+- Week 2: Basic scraping working
+- Week 3: Processing pipeline functional
+- Week 4: Storage system working
+- Week 5: MVP complete
+
+### Daily Check-ins
+- Review progress vs timeline
+- Adjust priorities as needed
+- Document blockers
+- Update risk assessment
+
+## 5. Success Metrics Timeline
+
+### Week 1
+- [ ] All documentation complete
+- [X] Development environment ready
+- [X] Repository set up
+
+### Week 2
+- [ ] Can scrape from one source
+- [ ] Basic validation working
+- [X] Error logging functional
+
+### Week 3
+- [ ] Processing 5 docs/hour
+- [ ] Error rate < 10%
+- [ ] Basic cleaning working
+
+### Week 4
+- [ ] Database storing docs
+- [ ] Can retrieve docs
+- [ ] Components integrated
+
+### Week 5
+- [ ] MVP features complete
+- [ ] Legal compliance implemented
+- [ ] System documented
