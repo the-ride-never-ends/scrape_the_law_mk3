@@ -1,5 +1,5 @@
 # Program: scrape_the_law_mk3
-## Authors: Kyle Rose, Claude 3.5 Sonnet
+## Authors: Kyle Rose, Claude 3.5 Sonnet, Codestral
 
 ## Overview
 3rd version of scrape_the_law, per Endo's comments and critiques.
