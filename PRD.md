@@ -77,9 +77,9 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 ### 1.3 Global Success Metrics, ordered by priority
 | Category     | Metric                        | Minimum Target  | Optimal Target  | Measurement Method                                           |
 |--------------|-------------------------------|-----------------|-----------------|--------------------------------------------------------------|
-| Coverage     | % of US cities covered        | 50%             | 95%             | Codes available / Total # cities                             |
+| Coverage     | % of US cities covered        | 50%             | 95%             | Cities with codes in SQL Datbase / Total # cities            |
 | Accuracy     | Text accuracy vs. source      | 99%             | 99.99%          | Error rate per 1000 words                                    |
-| Completeness | Code section coverage         | 95%             | 99.99%          | Code Sections Available / Total # Code Sections              |
+| Completeness | Code section coverage         | 95%             | 99.99%          | Avg Code Sections Available / Avg Total # Code Sections      |
 | Transparency | Source attribution available  | 100%            | 100%            | Content with Metadata / Total Content                        |
 | Reliability  | Error rate in data processing | < 1%            | < 0.1%          | Error rate per 1000 content chunks                           |
 | Consistency  | Format standardization        | 95%             | 99.99%          | Random sample of content chunks vs pre-defined standard      |
@@ -90,6 +90,8 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 
 
 ## 1.4 Success Metrics by Stakeholder Type
+**NOTE: This is Claude boiler-plate. It will be removed once I confirm
+
 
 ### 1.4.1 Legal/Government Stakeholders
 | Stakeholder | Primary Needs | Metric | Target | Measurement Method |
@@ -141,7 +143,7 @@ Build a web scraping system to collect municipal legal codes from US cities/coun
 | Docs Type Support              | Extraction, cleaning, and validation of law docs | -  Support extraction, validation, and cleaning for HTML, text PDFs <br>- Flags non-textual docs like graphs, tables, and images |
 | Persistant Docs Storage        | Database of raw and cleaned Docs | - Efficiently stores plain-text copies of HTML and PDF Docs <br>- Handles UTF-8 encoding |
 | Docs Extraction Rate           | # of docs scraped per hour | 5 docs per hour. | 100 docs per hour. |
-| Docs Conversion Error Rate     | Errors in Docs extraction, cleaning, and validation. |- Minimum: 90% <br> - Optimal: 100%
+| Docs Conversion Error Rate     | Errors in Docs extraction, cleaning, and validation. | 10% of Total Docs | <1% of Total Docs |
 | Error Handling                 | Input extraction, validation and error reporting | - Catches and reports common errors <br>- Provides clear error messages |
 | Legal Compliance               | Alert user to legal notices from stakeholders | - Logs and alerts user to legal notices <br> - Automated take-down measures <br> |
 
