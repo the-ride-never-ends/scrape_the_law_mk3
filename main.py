@@ -8,6 +8,7 @@ import time
 from utils.shared.next_step import next_step
 from utils.shared.sanitize_filename import sanitize_filename
 
+import multiprocessing
 
 from database.mysql_database import MySqlDatabase
 from config.config import *

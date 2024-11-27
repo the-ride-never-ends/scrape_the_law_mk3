@@ -39,16 +39,6 @@ _CANNOT_BE_NONE = [
 ]
 
 
-
-
-
-
-
-
-
-
-
-
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Union, Type, Any, Optional, get_args, get_origin
 from datetime import datetime, date

@@ -28,6 +28,18 @@ try:
     INPUT_FOLDER: str = config(path, 'INPUT_FOLDER') or os.path.join(MAIN_FOLDER, "input")
     OUTPUT_FOLDER: str = config(path, 'OUTPUT_FOLDER') or os.path.join(MAIN_FOLDER, "output")
 
+    # MYSQL
+    path = "MYSQL"
+    HOST: str = config(path, 'HOST')
+    USER: str = config(path, 'USER')
+    PORT: int = config(path, 'PORT')
+    PASSWORD: str = config(path, 'PASSWORD')
+    DATABASE_NAME: str = config(path, 'DATABASE_NAME')
+    SQL_SCRIPT_FILE_PATH: str = config(path, 'SQL_SCRIPT_FILE_PATH') or ""
+    INSERT_BATCH_SIZE: int = config(path, 'INSERT_BATCH_SIZE') or 20
+    MYSQL_SCRIPT_FILE_PATH: str = os.path.join(SQL_SCRIPT_FILE_PATH, "mysql")
+    DUCKDB_SCRIPT_FILE_PATH: str = os.path.join(SQL_SCRIPT_FILE_PATH, "duckdb")
+
     logger.info("YAML configs loaded.")
 
 except KeyError as e:

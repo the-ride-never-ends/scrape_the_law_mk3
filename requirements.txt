@@ -1,6 +1,7 @@
 aiohttp
 aiomysql
 beautifulsoup4
+duckdb # Concurrency support with MySQL
 multipledispatch
 mysql-connector-python
 pandas
