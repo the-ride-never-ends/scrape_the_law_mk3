@@ -20,7 +20,6 @@ from playwright.async_api import (
     TimeoutError as AsyncPlaywrightTimeoutError,
 )
 
-
 from utils.shared.safe_format import safe_format
 from utils.shared.sanitize_filename import sanitize_filename
 from utils.shared.decorators.try_except import try_except, async_try_except

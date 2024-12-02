@@ -12,8 +12,8 @@ pymysql
 python-slugify
 playwright
 pytest
-pytest-playwright
 pytest-asyncio
+pytest-playwright
 pyyaml
 requests
 selenium
