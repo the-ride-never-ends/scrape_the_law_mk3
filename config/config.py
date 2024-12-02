@@ -36,7 +36,8 @@ try:
     PASSWORD: str = config(path, 'PASSWORD')
     DATABASE_NAME: str = config(path, 'DATABASE_NAME')
     SQL_SCRIPT_FILE_PATH: str = config(path, 'SQL_SCRIPT_FILE_PATH') or ""
-    INSERT_BATCH_SIZE: int = config(path, 'INSERT_BATCH_SIZE') or 20
+    INSERT_BATCH_SIZE: int = config(path, 'INSERT_BATCH_SIZE') or 100
+    SELECT_BATCH_SIZE: int = config(path, 'SELECT_BATCH_SIZE') or 100
     MYSQL_SCRIPT_FILE_PATH: str = os.path.join(SQL_SCRIPT_FILE_PATH, "mysql")
     DUCKDB_SCRIPT_FILE_PATH: str = os.path.join(SQL_SCRIPT_FILE_PATH, "duckdb")
 

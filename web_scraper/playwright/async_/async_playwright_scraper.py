@@ -5,7 +5,8 @@ import os
 from typing import Any, Coroutine
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urljoin, urlsplit, urlparse
-
+import re
+import math
 
 import aiohttp
 # These are imported primarily for type hinting.
@@ -77,14 +78,19 @@ class AsyncPlaywrightScrapper:
                  domain: str,
                  pw_instance: AsyncPlaywrightContextManager,
                  user_agent: str="*",
+                 robots_txt_filepath: str = None,
                  **launch_kwargs):
 
         self.launch_kwargs = launch_kwargs
         self.pw_instance: AsyncPlaywrightContextManager = pw_instance
         self.domain: str = domain
+        self.domain_name: str = _extract_domain_name_from_url(self.domain)
         self.user_agent: str = user_agent
         self.sanitized_filename = sanitize_filename(self.domain)
         self.output_dir = os.path.join(OUTPUT_FOLDER, self.sanitized_filename)
+        self.robots_txt_filepath: str = robots_txt_filepath or os.path.join(
+            PROJECT_ROOT, "web_scraper", "sites", self.domain_name, f"{self.domain_name}_robots.txt"
+        )
 
         # Create the output directory if it doesn't exist.
         if not os.path.exists(self.output_dir):
@@ -101,8 +107,7 @@ class AsyncPlaywrightScrapper:
         self.screenshot_path = None
 
     # Define class enter and exit methods.
-
-    async def _get_robot_rules(self) -> None:
+    async def get_robot_rules(self) -> None:
         """
         Get the site's robots.txt file and read it asynchronously with a timeout.
         TODO Make a database of robots.txt files. This might be a good idea for scraping.
@@ -110,8 +115,7 @@ class AsyncPlaywrightScrapper:
         robots_url = urljoin(self.domain, 'robots.txt')
 
         # Check if we already got the robots.txt file for this website
-        domain_name = _extract_domain_name_from_url(self.domain)
-        robots_txt_filepath = os.path.join(PROJECT_ROOT, "web_scraper", "sites", domain_name, f"{domain_name}_robots.txt")
+        robots_txt_filepath = self.robots_txt_filepath
         e_tuple: tuple = None
 
         self.rp = RobotFileParser(robots_url)
@@ -160,8 +164,9 @@ class AsyncPlaywrightScrapper:
         logger.info(f"crawl_delay set to {self.crawl_delay}")
         return
 
+
     @async_try_except(exception=[AsyncPlaywrightTimeoutError, AsyncPlaywrightError], raise_exception=True)
-    async def _load_browser(self) -> None:
+    async def load_browser(self) -> None:
         """
         Launch a chromium browser instance.
         """
@@ -179,8 +184,18 @@ class AsyncPlaywrightScrapper:
         """
         logger.debug("Starting AsyncPlaywrightScrapper via factory method...")
         instance = cls(domain, pw_instance, *args, **kwargs)
-        await instance._get_robot_rules()
-        await instance._load_browser()
+
+        # Check if this method was called directly or via super() from a child class
+        if cls is AsyncPlaywrightScrapper:
+            logger.debug("Method called directly on AsyncPlaywrightScrapper")
+            await instance.get_robot_rules()
+            await instance.load_browser()
+        else:
+            # This block is executed when the method is called via super() from a child class
+            logger.debug(f"Method called via super() from {cls.__name__}")
+            # We only get the robot rules here, as otherwise we can't use it concurrently.
+            await instance.get_robot_rules()
+        
         return instance
 
 
@@ -196,8 +211,8 @@ class AsyncPlaywrightScrapper:
 
 
     async def __aenter__(self) -> 'AsyncPlaywrightScrapper':
-        await self._get_robot_rules()
-        return await self._load_browser()
+        await self.get_robot_rules()
+        return await self.load_browser()
 
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -279,7 +294,12 @@ class AsyncPlaywrightScrapper:
     # These function's put all the small bits together.
 
     @try_except(exception=[AsyncPlaywrightTimeoutError, AsyncPlaywrightError])
-    async def navigate_to(self, url: str, idx: int = None, crawl_override: int|float = None, **kwargs) -> Coroutine:
+    async def navigate_to(self, 
+                          url: str, 
+                          idx: int = None, 
+                          crawl_override: int|float = None,
+                          headers: dict = None, 
+                          **kwargs) -> Coroutine:
         """
         Open a specified webpage and wait for any dynamic elements to load.
         This method respects robots.txt rules (e.g. not scrape disallowed URLs, respects crawl delays).
@@ -324,6 +344,8 @@ class AsyncPlaywrightScrapper:
         # Open a new context and page.
         await self.open_new_context()
         await self.open_new_page()
+        if headers:
+            await self.page.set_extra_http_headers(headers=headers)
 
         # Go to the URL and wait for it to fully load.
         await self.page.goto(url, **kwargs)

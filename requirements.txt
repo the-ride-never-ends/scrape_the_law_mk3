@@ -1,13 +1,18 @@
 aiohttp
 aiomysql
 beautifulsoup4
-duckdb # Concurrency support with MySQL
+pybind11
+setuptools==59.6.0
+setuptools-scm==6.4.2
+duckdb # Concurrency support with MySQL NOTE MOTHERFUCKER DOESN'T WORK.
 multipledispatch
 mysql-connector-python
 pandas
 pymysql
+python-slugify
+playwright
+pytest
 pytest-playwright
 pyyaml
 requests
 selenium
-playwright
