@@ -263,6 +263,9 @@ class AsyncWebScraperBase(AsyncPlaywrightScrapper):
         """
         pass
 
+			@abstractmethod
+			def __aenter__(self):
+						return await self
 
     @abstractmethod
     async def preprocess_url(self, url: DocumentUrl | SourceUrl ) -> DocumentUrl | SourceUrl:
