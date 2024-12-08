@@ -4,7 +4,7 @@ beautifulsoup4
 pybind11
 setuptools==59.6.0
 setuptools-scm==6.4.2
-duckdb # Concurrency support with MySQL NOTE MOTHERFUCKER DOESN'T WORK.
+duckdb
 multipledispatch
 mysql-connector-python
 pandas

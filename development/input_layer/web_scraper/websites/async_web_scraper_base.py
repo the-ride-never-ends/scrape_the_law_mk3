@@ -495,9 +495,9 @@ class AsyncWebScraperBase(AsyncPlaywrightScrapper):
                             doc_type = DocumentType.OTHER
 
                     elif response.status == 403 or response.status == 406:
-                        
+
                         # Assume refused requests or forbidden requests require javascript of some kind.
-                        # 2.4. Check if JavaScript is required:
+                            # 2.4. Check if JavaScript is required:
                         async with async_playwright() as pw_instance:
 
                             # Initialize headless browser
