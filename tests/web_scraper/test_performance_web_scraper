@@ -1,0 +1,478 @@
+import pytest
+import asyncio
+import time
+import psutil
+import os
+import gc
+import aiohttp
+from concurrent.futures import ProcessPoolExecutor
+from memory_profiler import profile # NOTE: This is an actual library.
+from bs4 import BeautifulSoup
+
+
+from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
+from development.input_layer.autoscraper_web_scraper.async_auto_scraper import AsyncAutoScraper
+from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper import PlaywrightAutoScraper
+
+
+
+class PerformanceTests:
+    """Performance test suite for AutoScraper"""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup resources and ensure clean state for each test"""
+        gc.collect()  # Force garbage collection before each test
+        self.process = psutil.Process(os.getpid())
+        self.initial_memory = self.process.memory_info().rss
+        yield
+        gc.collect()  # Cleanup after test
+
+    def _generate_large_html(self, size_mb: int) -> str:
+        """Generate HTML document of specified size in MB"""
+        # Base template that will be repeated
+        template = '''
+        <div class="item">
+            <h2>Title {}</h2>
+            <p class="description">Description for item {}</p>
+            <span class="price">${}.99</span>
+            <div class="nested">
+                <ul>
+                    <li>Feature 1</li>
+                    <li>Feature 2</li>
+                    <li>Feature 3</li>
+                </ul>
+            </div>
+        </div>
+        '''
+        
+        # Calculate how many iterations needed for target size
+        target_bytes = size_mb * 1024 * 1024
+        single_size = len(template.format(1, 1, 1))
+        iterations = target_bytes // single_size + 1
+        
+        content = ''.join(template.format(i, i, i) for i in range(iterations))
+        return f'<html><body>{content}</body></html>'
+
+    @profile
+    def test_large_document_memory(self):
+        """Test memory usage when processing large HTML documents"""
+        # Algorithm:
+        # 1. Generate HTML documents of increasing size (1MB, 5MB, 10MB, 50MB)
+        # 2. Process each document and measure peak memory usage
+        # 3. Verify memory is properly released after processing
+        # 4. Track memory growth pattern
+        
+        sizes = [1, 5, 10, 50]  # MB
+        memory_usage = []
+        
+        for size in sizes:
+            html = self._generate_large_html(size)
+            gc.collect()
+            initial = self.process.memory_info().rss
+            
+            # Process document
+            scraper = AsyncAutoScraper()
+            soup = scraper._process_soup(html)
+            
+            peak = self.process.memory_info().rss
+            del soup
+            gc.collect()
+            final = self.process.memory_info().rss
+            
+            memory_usage.append({
+                'size_mb': size,
+                'initial_mb': initial / (1024 * 1024),
+                'peak_mb': peak / (1024 * 1024),
+                'final_mb': final / (1024 * 1024)
+            })
+        
+        # Verify reasonable memory usage (should be roughly linear)
+        for i in range(1, len(memory_usage)):
+            ratio = memory_usage[i]['peak_mb'] / memory_usage[i-1]['peak_mb']
+            assert ratio < 10, f"Memory growth is too high: {ratio}x"
+            
+        # Verify cleanup
+        for usage in memory_usage:
+            cleanup_ratio = usage['final_mb'] / usage['initial_mb']
+            assert cleanup_ratio < 1.5, f"Memory not properly cleaned up: {cleanup_ratio}x remaining"
+
+    @pytest.mark.asyncio
+    async def test_concurrent_requests(self):
+        """Test performance with many simultaneous requests"""
+        # Algorithm:
+        # 1. Set up test server with controlled response times
+        # 2. Make concurrent requests with increasing parallelism
+        # 3. Measure throughput and response times
+        # 4. Verify resource usage stays reasonable
+        
+        async def setup_test_server():
+            app = aiohttp.web.Application()
+            async def handle(request):
+                await asyncio.sleep(0.1)  # Simulate processing
+                return aiohttp.web.Response(text=self._generate_large_html(1))
+            app.router.add_get('/', handle)
+            runner = aiohttp.web.AppRunner(app)
+            await runner.setup()
+            site = aiohttp.web.TCPSite(runner, 'localhost', 8080)
+            await site.start()
+            return runner
+
+        runner = await setup_test_server()
+        try:
+            concurrency_levels = [1, 5, 10, 25, 50]
+            results = []
+            
+            for concurrency in concurrency_levels:
+                scraper = AsyncAutoScraper()
+                start_time = time.time()
+                initial_memory = self.process.memory_info().rss
+                
+                # Make concurrent requests
+                tasks = [
+                    scraper._async_fetch_html('http://localhost:8080/')
+                    for _ in range(concurrency)
+                ]
+                responses = await asyncio.gather(*tasks)
+                
+                end_time = time.time()
+                peak_memory = self.process.memory_info().rss
+                
+                results.append({
+                    'concurrency': concurrency,
+                    'time': end_time - start_time,
+                    'memory_mb': (peak_memory - initial_memory) / (1024 * 1024),
+                    'throughput': concurrency / (end_time - start_time)
+                })
+                
+                # Allow system to stabilize
+                await asyncio.sleep(1)
+                
+            # Verify performance characteristics
+            for i in range(1, len(results)):
+                # Throughput should scale sublinearly
+                throughput_ratio = results[i]['throughput'] / results[i-1]['throughput']
+                assert throughput_ratio > 0.5, f"Throughput scaling too poor: {throughput_ratio}"
+                
+                # Memory should not grow exponentially
+                memory_ratio = results[i]['memory_mb'] / results[i-1]['memory_mb']
+                assert memory_ratio < 2, f"Memory scaling too poor: {memory_ratio}"
+                
+        finally:
+            await runner.cleanup()
+
+    def test_rule_complexity_cpu(self):
+        """Test CPU usage with complex scraping rules"""
+        # Algorithm:
+        # 1. Generate HTML with increasing complexity levels
+        # 2. Create increasingly complex rules
+        # 3. Measure CPU time for processing
+        # 4. Verify processing time scales reasonably
+        
+        def generate_nested_html(depth: int) -> str:
+            def _generate(current_depth: int) -> str:
+                if current_depth == 0:
+                    return '<span class="target">Content</span>'
+                return f'<div class="level-{current_depth}">{_generate(current_depth-1)}</div>'
+            return f'<html><body>{_generate(depth)}</body></html>'
+
+        def measure_cpu_time(func):
+            start_cpu = time.process_time()
+            result = func()
+            end_cpu = time.process_time()
+            return end_cpu - start_cpu
+
+        depths = [5, 10, 15, 20, 25]
+        results = []
+
+        for depth in depths:
+            html = generate_nested_html(depth)
+            scraper = AsyncAutoScraper()
+            
+            # Measure rule building time
+            cpu_time = measure_cpu_time(
+                lambda: scraper.build(
+                    html=html,
+                    wanted_list=['Content'],
+                    text_fuzz_ratio=0.8
+                )
+            )
+            
+            results.append({
+                'depth': depth,
+                'cpu_time': cpu_time
+            })
+
+        # Verify CPU scaling (should be roughly polynomial, not exponential)
+        for i in range(1, len(results)):
+            ratio = results[i]['cpu_time'] / results[i-1]['cpu_time']
+            depth_ratio = results[i]['depth'] / results[i-1]['depth']
+            # CPU time should grow no faster than O(n^3)
+            assert ratio < depth_ratio ** 3, f"CPU scaling too poor: {ratio}x vs {depth_ratio}^3"
+
+    @pytest.mark.asyncio
+    async def test_connection_pooling(self):
+        """Test connection pooling efficiency"""
+        # Algorithm:
+        # 1. Set up test server
+        # 2. Make repeated requests to same host
+        # 3. Measure connection reuse
+        # 4. Compare performance with/without pooling
+        
+        async def setup_test_server():
+            # Similar setup as in concurrent_requests test
+            pass
+
+        runner = await setup_test_server()
+        try:
+            request_counts = [10, 50, 100, 200]
+            pooled_results = []
+            unpooled_results = []
+
+            for count in request_counts:
+                # Test with connection pooling
+                scraper = AsyncAutoScraper()
+                start_time = time.time()
+                tasks = [
+                    scraper._async_fetch_html('http://localhost:8080/')
+                    for _ in range(count)
+                ]
+                await asyncio.gather(*tasks)
+                pooled_time = time.time() - start_time
+
+                # Test without connection pooling (new session each time)
+                start_time = time.time()
+                for _ in range(count):
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get('http://localhost:8080/') as response:
+                            await response.text()
+                unpooled_time = time.time() - start_time
+
+                pooled_results.append(pooled_time)
+                unpooled_results.append(unpooled_time)
+
+            # Verify pooling benefits
+            for i in range(len(request_counts)):
+                # Pooled should be significantly faster
+                assert pooled_results[i] < unpooled_results[i] * 0.7, \
+                    f"Pooling not providing sufficient benefit: {pooled_results[i]} vs {unpooled_results[i]}"
+
+        finally:
+            await runner.cleanup()
+
+    def test_resource_cleanup(self):
+        """Test resource cleanup efficiency"""
+        # Algorithm:
+        # 1. Create and destroy scrapers with various configurations
+        # 2. Monitor resource usage over time
+        # 3. Verify no resource leaks
+        
+        def create_and_use_scraper():
+            scraper = AsyncAutoScraper()
+            html = self._generate_large_html(1)
+            scraper.build(html=html, wanted_list=['Content'])
+            return scraper
+
+        initial_resources = self.process.num_fds()  # File descriptors
+        initial_memory = self.process.memory_info().rss
+
+        scrapers = []
+        measurements = []
+
+        # Create many scrapers
+        for _ in range(100):
+            scrapers.append(create_and_use_scraper())
+            measurements.append({
+                'fds': self.process.num_fds(),
+                'memory': self.process.memory_info().rss
+            })
+
+        # Destroy scrapers
+        for scraper in scrapers:
+            del scraper
+            gc.collect()
+
+        final_resources = self.process.num_fds()
+        final_memory = self.process.memory_info().rss
+
+        # Verify cleanup
+        assert final_resources <= initial_resources * 1.1, \
+            f"Resource leak detected: {final_resources} vs {initial_resources}"
+        assert final_memory <= initial_memory * 1.2, \
+            f"Memory leak detected: {final_memory} vs {initial_memory}"
+
+    @profile
+    def test_memory_growth_pattern(self):
+        """Test memory growth pattern during extended use"""
+        # Algorithm:
+        # 1. Run continuous scraping operations
+        # 2. Monitor memory usage pattern
+        # 3. Verify no unbounded growth
+        
+        scraper = AsyncAutoScraper()
+        initial_memory = self.process.memory_info().rss
+        measurements = []
+
+        for _ in range(100):
+            html = self._generate_large_html(1)
+            scraper.build(html=html, wanted_list=['Content'])
+            gc.collect()
+            
+            measurements.append(self.process.memory_info().rss)
+
+        # Calculate growth rate
+        memory_growth = [
+            (measurements[i] - measurements[i-1]) / measurements[i-1]
+            for i in range(1, len(measurements))
+        ]
+
+        # Verify growth rate decreases
+        for i in range(1, len(memory_growth)):
+            assert memory_growth[i] <= memory_growth[i-1] * 1.1, \
+                f"Unbounded memory growth detected: {memory_growth[i]} vs {memory_growth[i-1]}"
+
+    def test_bandwidth_usage(self):
+        """Test network bandwidth usage efficiency"""
+        # Algorithm:
+        # 1. Set up test server with various response sizes
+        # 2. Monitor network usage during scraping
+        # 3. Verify bandwidth usage is optimal
+        
+        class NetworkMonitor:
+            def __init__(self):
+                self.start_bytes = psutil.net_io_counters()
+
+            def get_usage(self):
+                current = psutil.net_io_counters()
+                return {
+                    'sent': current.bytes_sent - self.start_bytes.bytes_sent,
+                    'received': current.bytes_recv - self.start_bytes.bytes_recv
+                }
+
+        async def run_bandwidth_test(size_mb: int):
+            monitor = NetworkMonitor()
+            scraper = AsyncAutoScraper()
+            
+            # Make request
+            html = await scraper._async_fetch_html(f'http://localhost:8080/{size_mb}')
+            
+            # Get bandwidth usage
+            usage = monitor.get_usage()
+            actual_size = len(html.encode('utf-8'))
+            
+            return {
+                'size_mb': size_mb,
+                'bandwidth_usage': usage,
+                'actual_size': actual_size
+            }
+
+        sizes = [1, 5, 10]
+        results = []
+
+        for size in sizes:
+            result = asyncio.run(run_bandwidth_test(size))
+            results.append(result)
+
+        # Verify bandwidth efficiency
+        for result in results:
+            # Received bytes should be close to actual content size
+            efficiency = result['actual_size'] / result['bandwidth_usage']['received']
+            assert efficiency > 0.8, f"Poor bandwidth efficiency: {efficiency}"
+
+    def test_cache_effectiveness(self):
+        """Test caching system effectiveness"""
+        # Algorithm:
+        # 1. Make repeated requests to same URLs
+        # 2. Monitor cache hits/misses
+        # 3. Verify cache improves performance
+        
+        class CacheMetrics:
+            def __init__(self):
+                self.hits = 0
+                self.misses = 0
+                self.timings = []
+
+            def hit(self):
+                self.hits += 1
+
+            def miss(self):
+                self.misses += 1
+
+            def add_timing(self, duration: float):
+                self.timings.append(duration)
+
+            @property
+            def hit_rate(self):
+                total = self.hits + self.misses
+                return self.hits / total if total > 0 else 0
+
+            @property
+            def average_timing(self):
+                return sum(self.timings) / len(self.timings) if self.timings else 0
+
+        # Setup test data
+        metrics = CacheMetrics()
+        scraper = AsyncAutoScraper()
+        test_pages = {
+            'http://test1.com': self._generate_large_html(1),
+            'http://test2.com': self._generate_large_html(1),
+            'http://test3.com': self._generate_large_html(1)
+        }
+
+        # Mock the fetch method to simulate network and use our test pages
+        async def mock_fetch(url: str, **kwargs):
+            start_time = time.time()
+            
+            # Simulate network delay for cache misses
+            if url not in scraper._cache:
+                await asyncio.sleep(0.1)  # Simulate network latency
+                metrics.miss()
+                scraper._cache[url] = test_pages[url]
+            else:
+                metrics.hit()
+            
+            duration = time.time() - start_time
+            metrics.add_timing(duration)
+            return scraper._cache[url]
+
+        # Replace fetch method with our mock
+        scraper._async_fetch_html = mock_fetch
+
+        # Run test sequences
+        async def run_test_sequence():
+            # Sequence 1: First-time requests
+            for url in test_pages.keys():
+                await scraper._async_fetch_html(url)
+
+            # Sequence 2: Repeated requests to same URLs
+            for _ in range(5):
+                for url in test_pages.keys():
+                    await scraper._async_fetch_html(url)
+
+            # Sequence 3: Mixed new and cached requests
+            test_pages['http://test4.com'] = self._generate_large_html(1)
+            for url in test_pages.keys():
+                await scraper._async_fetch_html(url)
+
+        # Run the test
+        asyncio.run(run_test_sequence())
+
+        # Verify cache effectiveness
+        assert metrics.hit_rate >= 0.7, f"Cache hit rate too low: {metrics.hit_rate}"
+
+        # Verify timing improvements
+        cached_times = sorted(metrics.timings)[:-3]  # Exclude initial misses
+        uncached_times = sorted(metrics.timings)[-3:]  # Initial misses
+        avg_cached = sum(cached_times) / len(cached_times)
+        avg_uncached = sum(uncached_times) / len(uncached_times)
+        
+        # Cached requests should be significantly faster
+        assert avg_cached < avg_uncached / 5, \
+            f"Cache not providing sufficient performance improvement: " \
+            f"cached={avg_cached:.4f}s, uncached={avg_uncached:.4f}s"
+
+        # Verify memory usage of cache
+        cache_size = sum(len(html.encode('utf-8')) for html in scraper._cache.values())
+        max_cache_size = 50 * 1024 * 1024  # 50MB
+        assert cache_size < max_cache_size, \
+            f"Cache size too large: {cache_size / 1024 / 1024:.2f}MB"

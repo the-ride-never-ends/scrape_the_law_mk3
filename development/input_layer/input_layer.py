@@ -12,12 +12,12 @@ logger = Logger(logger_name=__name__)
 
 @dataclass
 PipelineConfig:
-			table: str # Name of the SQL table to pull from.
-			url_id_bin: list[bytes] # Bytes version of the URL id.
-			available_cpu_cores: int # Number of CPU cores available for use by the program.
-   date_range: tuple(datetime, datetime) # Date range from which the URLs must have been last updated. Due to the computational intensity of dates in MySQL, we compare strings instead of pure dates.
+    table: str # Name of the SQL table to pull from.
+    url_id_bin: list[bytes] # Bytes version of the URL id.
+    available_cpu_cores: int # Number of CPU cores available for use by the program.
+    date_range: tuple(datetime, datetime) # Date range from which the URLs must have been last updated. Due to the computational intensity of dates in MySQL, we compare strings instead of pure dates.
 
-			def __post_init__(self):
+	def __post_init__(self):
 
 		def type_check_date_range(self) -> Never:
 					raise_error_message = None
@@ -66,4 +66,6 @@ class InputLayer:
 
 if __main__ == "__main__":
 							asyncio.run(main())
+
+
 

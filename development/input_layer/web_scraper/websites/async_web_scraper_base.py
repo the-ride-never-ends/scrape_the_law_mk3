@@ -227,6 +227,36 @@ def determine_source_type(domain: str) -> SourceType:
 
 from web_scraper.playwright.async_.async_playwright_scraper import AsyncPlaywrightScrapper
 
+from dataclasses import dataclass
+from typing import Optional, Dict, Any
+
+
+
+@dataclass
+class Trigger:
+    url: str
+    scraper_name: str
+    request_interval: float = 1.0
+    max_retries: int = 3
+    timeout: float = 30.0
+    headers: Optional[dict[str, str]] = None
+    proxy: Optional[str] = None
+    custom_settings: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self):
+        if self.headers is None:
+            self.headers = {}
+        if self.custom_settings is None:
+            self.custom_settings
+
+class Content:
+    pass
+
+def start_scrape(Trigger: Trigger) -> ScrapingResult:
+    """
+    
+    """
+
 class AsyncWebScraperBase(AsyncPlaywrightScrapper):
     """
     Abstract base class for web scrapers.
@@ -257,15 +287,26 @@ class AsyncWebScraperBase(AsyncPlaywrightScrapper):
 
 
     @abstractmethod
-    async def initialize(self) -> None:
+    async def start(self) -> None:
         """
         Initialize resources needed for scraping.
         """
         pass
 
-			@abstractmethod
-			def __aenter__(self):
-						return await self
+    @abstractmethod
+    async def stop(self) -> None:
+        """
+        Stop the scraper and release any resources.
+        """
+        pass
+
+    @abstractmethod
+    async def __aenter__(self):
+        return await self
+
+    @abstractmethod
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.stop()
 
     @abstractmethod
     async def preprocess_url(self, url: DocumentUrl | SourceUrl ) -> DocumentUrl | SourceUrl:

@@ -5,6 +5,14 @@ Input: Raw PDF content from Web Scraper in Input Layer
 Output: Structured PDF data to Queue Manager in Processing Layer
 """
 
+from dataclasses import dataclass
+from datetime import datetime
+from uuid import UUID
+
+from typing import Any, Optional, TypeVar
+
+DocumentType = TypeVar('DocumentType', str)
+
 
 import abc
 from abc import abstractmethod
