@@ -1,18 +1,29 @@
 from abc import ABC, abstractmethod
-import hashlib
-import json
+import asyncio
 from collections import defaultdict
+import hashlib
 from html import unescape
+import json
+import os
+import pathlib
+import pickle
+from typing import Any, Callable, Iterable, Optional, OrderedDict, Pattern, TypeVar
 from urllib.parse import urljoin
-from typing import Any, Callable, Optional, OrderedDict, Pattern, TypeVar
+from urllib.robotparser import RobotFileParser
+import xml.etree.ElementTree as ET
 
 
-T = TypeVar('T')
-
-
+import aiohttp
 from bs4 import BeautifulSoup, PageElement, Tag, ResultSet
+import duckdb
+import yaml
 
-BeautifulSoup()
+from utils.shared.make_id import make_id
+from .file_path_to_dict import file_path_to_dict
+from database.mysql_database import MySqlDatabase
+from logger.logger import Logger
+
+from dataclasses import dataclass
 
 from .utils import (
     FuzzyText,
@@ -25,6 +36,18 @@ from .utils import (
     unique_stack_list,
 )
 
+def dict_to_string_iterable(input_dict: dict) -> Iterable[str]:
+    for key, value in input_dict.items():
+        yield f"{key}: {value}"
+
+@dataclass
+class Trigger:
+    url: str
+    stack_list: list
+    playwright_stack_list: list = None
+
+
+T = TypeVar('T')
 
 class BaseAutoScraper(ABC):
     """
@@ -65,8 +88,16 @@ class BaseAutoScraper(ABC):
         self.stack_list: list = stack_list or []
         self.post_processing_functions_dict: dict[Callable] = post_processing_functions_dict or {}
         self.robots_txt_filepath: str = robots_txt_filepath or ""
+        self.logger: Logger = Logger(logger_name=f"{self.__class__.__module__}__{self.__class__.__name__}__{str(id)}")
+        self.trigger = Trigger
 
-    def save(self, file_path: str):
+        self.domain = self.trigger
+        self.rp: RobotFileParser = None
+        self.request_rate: float = None
+        self.crawl_delay: int = None
+
+
+    def save(self, file_path: str, data: dict = None):
         """
         Serializes the stack_list as JSON and saves it to the disk.
 
@@ -76,28 +107,34 @@ class BaseAutoScraper(ABC):
         Returns:
             None.
         """
-        data = dict(stack_list=self.stack_list)
+        data = data or dict(stack_list=self.stack_list)
         with open(file_path, "w") as f:
             json.dump(data, f)
 
 
-    def load(self, file_path: str) -> None:
+    def load(self, file_path: str) -> None: # -> str | list[str]
         """
         De-serializes the JSON representation of the stack_list and loads it back.
 
         Args:
             file_path (str): Path of the JSON file to load stack_list from.
         """
-
-        with open(file_path, "r") as f:
-            data = json.load(f)
+        # Get the data from the file.
+        # NOTE: Supported types include "json", "log", "yaml/yml", "csv", "xml", 
+        # "sqlite", "mysql", "pickle/pkl", "db", and "txt" files.
+        data: dict = file_path_to_dict(file_path, logger=self.logger)
 
         # for backward compatibility
         if isinstance(data, list):
             self.stack_list = data
             return
 
-        self.stack_list = data["stack_list"]
+        if "robots" in file_path:
+            # Check if we already got the robots.txt file for this website
+            # If we do, load it in.
+            self.rp.parse(dict_to_string_iterable(data).splitlines())
+        else: 
+            self.stack_list = data["stack_list"]
 
 
     def validate_url(self, url: Optional[str]) -> None:
@@ -115,9 +152,53 @@ class BaseAutoScraper(ABC):
         pass
 
 
-    @abstractmethod
-    async def async_get_robot_rules(self) -> list:
-        pass
+    async def _async_get_robots_rules(self, robots_url: str) -> str | None:
+        async with aiohttp.ClientSession() as session:
+            try:
+                self.logger.info(f"Getting robots.txt from '{robots_url}'...")
+                async with session.get(robots_url, timeout=10) as response:  # 10 seconds timeout
+                    if response.status == 200:
+                        self.logger.info("robots.txt response ok")
+                        content = await response.text()
+                        self.rp.parse(content.splitlines())
+                        self.logger.info(f"Got robots.txt for {self.domain}")
+                        self.logger.debug(f"content:\n{content}",f=True)
+                        return content
+                    else:
+                        self.logger.warning(f"Failed to fetch robots.txt: HTTP {response.status}")
+                        return None
+            except (asyncio.TimeoutError, aiohttp.ClientError) as e:
+                mes = f"{e.__qualname__} while fetching robots.txt from '{robots_url}': {e}"
+                self.logger.warning(mes)
+                return None
+
+    # Define class enter and exit methods.
+    async def async_get_robots_rules(self) -> None:
+        """
+        Get the site's robots.txt file and read it asynchronously with a timeout.
+        TODO Make a database of robots.txt files. This might be a good idea for scraping.
+        """
+
+        robots_url = urljoin(self.domain, 'robots.txt')
+        self.rp = RobotFileParser(robots_url)
+
+        if os.path.exists(self.robots_txt_filepath):
+            self.logger.info(f"Using cached robots.txt file for '{self.domain}'...")
+            self.load(self.robots_txt_filepath)
+
+        else: # Get the robots.txt file from the server if we don't have it.
+            content = await self._async_get_robots_rules(robots_url)
+            
+            # Save the robots.txt file to disk.
+            if not os.path.exists(self.robots_txt_filepath):
+                self.save(self.robots_txt_filepath, data=content)
+ 
+        # Set the request rate and crawl delay from the robots.txt file.
+        self.request_rate: float = self.rp.request_rate(self.user_agent) or 0
+        self.logger.info(f"request_rate set to {self.request_rate}")
+        self.crawl_delay: int = int(self.rp.crawl_delay(self.user_agent))
+        self.logger.info(f"crawl_delay set to {self.crawl_delay}")
+        return
 
 
     @abstractmethod

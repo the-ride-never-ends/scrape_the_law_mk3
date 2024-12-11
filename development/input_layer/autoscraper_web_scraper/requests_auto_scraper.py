@@ -25,8 +25,29 @@ request_headers = {
 }
 
 
-class SyncAutoScraper:
-    pass
+class RequestsAutoScraper:
+
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+    def _fetch_html(self, url: str, request_args: dict = None):
+        request_args = request_args or {}
+        headers = dict(request_headers)
+        if url:
+            headers["Host"] = urlparse(url).netloc
+
+        user_headers = request_args.pop("headers", {})
+        headers.update(user_headers)
+        res = requests.get(url, headers=headers, **request_args)
+        if res.encoding == "ISO-8859-1" and not "ISO-8859-1" in res.headers.get(
+            "Content-Type", ""
+        ):
+            res.encoding = res.apparent_encoding
+        html = res.text
+        return html
+
 
 class _BaseAutoScraper(object):
     """
@@ -193,39 +214,37 @@ class _BaseAutoScraper(object):
         Automatically constructs a set of rules to scrape the specified target[s] from a web page.
             The rules are represented as stack_list.
 
-        Parameters:
-        ----------
-        url: str, optional
-            URL of the target web page. You should either pass url or html or both.
+        Args:
+            url: str, optional
+                URL of the target web page. You should either pass url or html or both.
 
-        wanted_list: list of strings or compiled regular expressions, optional
-            A list of needed contents to be scraped.
-                AutoScraper learns a set of rules to scrape these targets. If specified,
-                wanted_dict will be ignored.
+            wanted_list: list of strings or compiled regular expressions, optional
+                A list of needed contents to be scraped.
+                    AutoScraper learns a set of rules to scrape these targets. If specified,
+                    wanted_dict will be ignored.
 
-        wanted_dict: dict, optional
-            A dict of needed contents to be scraped. Keys are aliases and values are list of target texts
-                or compiled regular expressions.
-                AutoScraper learns a set of rules to scrape these targets and sets its aliases.
+            wanted_dict: dict, optional
+                A dict of needed contents to be scraped. Keys are aliases and values are list of target texts
+                    or compiled regular expressions.
+                    AutoScraper learns a set of rules to scrape these targets and sets its aliases.
 
-        html: str, optional
-            An HTML string can also be passed instead of URL.
-                You should either pass url or html or both.
+            html: str, optional
+                An HTML string can also be passed instead of URL.
+                    You should either pass url or html or both.
 
-        request_args: dict, optional
-            A dictionary used to specify a set of additional request parameters used by requests
-                module. You can specify proxy URLs, custom headers etc.
+            request_args: dict, optional
+                A dictionary used to specify a set of additional request parameters used by requests
+                    module. You can specify proxy URLs, custom headers etc.
 
-        update: bool, optional, defaults to False
-            If True, new learned rules will be added to the previous ones.
-            If False, all previously learned rules will be removed.
+            update: bool, optional, defaults to False
+                If True, new learned rules will be added to the previous ones.
+                If False, all previously learned rules will be removed.
 
-        text_fuzz_ratio: float in range [0, 1], optional, defaults to 1.0
-            The fuzziness ratio threshold for matching the wanted contents.
+            text_fuzz_ratio: float in range [0, 1], optional, defaults to 1.0
+                The fuzziness ratio threshold for matching the wanted contents.
 
         Returns:
-        --------
-        List of similar results
+            List of similar results
         """
 
         soup = self._get_soup(url=url, html=html, request_args=request_args)

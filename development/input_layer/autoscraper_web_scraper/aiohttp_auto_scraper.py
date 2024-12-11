@@ -40,7 +40,7 @@ REQUEST_HEADERS = {
 }
 
 
-class AsyncAutoScraper(BaseAutoScraper):
+class AiohttpAutoScraper(BaseAutoScraper):
     """AutoScraper implementation using aiohttp for basic requests"""
 
     async def _fetch_html(self, url: str, request_args: Optional[Dict[str, Any]] = None) -> str:
@@ -93,8 +93,8 @@ def create_scraper(scraper_type: str = "async", **kwargs) -> BaseAutoScraper:
                 )
     """
     scrapers = {
-        "requests": SyncAutoScraper,
-        "aiohttp": AsyncAutoScraper,
+        "requests": RequestsAutoScraper,
+        "aiohttp": AiohttpAutoScraper,
         "playwright": PlaywrightAutoScraper
     }
     

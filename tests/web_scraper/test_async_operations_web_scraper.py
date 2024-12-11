@@ -96,7 +96,7 @@ class MockResponse:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         pass
 
-class TestAsyncAutoScraper:
+class TestAiohttpAutoScraper:
     @pytest.fixture
     async def scraper(self) -> AsyncIterator[BaseAutoScraper]:
         """Fixture to create and cleanup scraper instance"""

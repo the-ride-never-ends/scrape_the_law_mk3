@@ -95,7 +95,7 @@ import json
 from http.cookiejar import CookieJar
 
 from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
-from development.input_layer.autoscraper_web_scraper.async_auto_scraper import AsyncAutoScraper
+from development.input_layer.autoscraper_web_scraper.aiohttp_auto_scraper import AiohttpAutoScraper
 from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper import PlaywrightAutoScraper
 
 # Fixtures
@@ -106,8 +106,8 @@ def mock_aioresponse():
         yield m
 
 @pytest.fixture
-async def async_scraper() -> AsyncGenerator[AsyncAutoScraper, None]:
-    scraper = AsyncAutoScraper()
+async def async_scraper() -> AsyncGenerator[AiohttpAutoScraper, None]:
+    scraper = AiohttpAutoScraper()
     yield scraper
     await scraper.close()  # Cleanup
 
@@ -119,7 +119,7 @@ async def playwright_scraper() -> AsyncGenerator[PlaywrightAutoScraper, None]:
 # Basic Website Testing
 
 @pytest.mark.asyncio
-async def test_basic_website_scraping(async_scraper: AsyncAutoScraper):
+async def test_basic_website_scraping(async_scraper: AiohttpAutoScraper):
     """Test scraping from a stable website (python.org)"""
     url = "https://python.org"
     wanted_items = ["Downloads", "Documentation", "Community"]
@@ -135,7 +135,7 @@ async def test_basic_website_scraping(async_scraper: AsyncAutoScraper):
 # Different Website Structures
 
 @pytest.mark.asyncio
-async def test_table_based_layout(async_scraper: AsyncAutoScraper, mock_aioresponse):
+async def test_table_based_layout(async_scraper: AiohttpAutoScraper, mock_aioresponse):
     """Test scraping from table-based layouts"""
     url = "http://test.com/table-layout"
     html_content = """
@@ -178,7 +178,7 @@ async def test_spa_structure(playwright_scraper: PlaywrightAutoScraper):
 # Content Type Tests
 
 @pytest.mark.asyncio
-async def test_different_encodings(async_scraper: AsyncAutoScraper, mock_aioresponse):
+async def test_different_encodings(async_scraper: AiohttpAutoScraper, mock_aioresponse):
     """Test handling of different content encodings"""
     url = "http://test.com/encoded"
     
@@ -213,7 +213,7 @@ async def test_different_encodings(async_scraper: AsyncAutoScraper, mock_aioresp
     assert "Hello" in results_1252
 
 @pytest.mark.asyncio
-async def test_compressed_response(async_scraper: AsyncAutoScraper, mock_aioresponse):
+async def test_compressed_response(async_scraper: AiohttpAutoScraper, mock_aioresponse):
     """Test handling of gzipped content"""
     url = "http://test.com/compressed"
     content = "Compressed Content"
@@ -238,7 +238,7 @@ async def test_compressed_response(async_scraper: AsyncAutoScraper, mock_aioresp
 # Server Configuration Tests
 
 @pytest.mark.asyncio
-async def test_redirect_handling(async_scraper: AsyncAutoScraper, mock_aioresponse):
+async def test_redirect_handling(async_scraper: AiohttpAutoScraper, mock_aioresponse):
     """Test handling of HTTP redirects"""
     initial_url = "http://test.com/old"
     final_url = "http://test.com/new"
@@ -281,7 +281,7 @@ class MockRateLimitServer:
         return 200, "Success"
 
 @pytest.mark.asyncio
-async def test_rate_limiting(async_scraper: AsyncAutoScraper):
+async def test_rate_limiting(async_scraper: AiohttpAutoScraper):
     """Test rate limit handling"""
     server = MockRateLimitServer(limit=5, window=1)  # 5 requests per second
     
@@ -303,7 +303,7 @@ async def test_rate_limiting(async_scraper: AsyncAutoScraper):
 # Cookie and Session Tests
 
 @pytest.mark.asyncio
-async def test_cookie_handling(async_scraper: AsyncAutoScraper):
+async def test_cookie_handling(async_scraper: AiohttpAutoScraper):
     """Test cookie management"""
     url = "http://test.com/cookies"
     
@@ -324,7 +324,7 @@ async def test_cookie_handling(async_scraper: AsyncAutoScraper):
 # Authentication Tests
 
 @pytest.mark.asyncio
-async def test_basic_auth(async_scraper: AsyncAutoScraper, mock_aioresponse):
+async def test_basic_auth(async_scraper: AiohttpAutoScraper, mock_aioresponse):
     """Test basic authentication"""
     url = "http://test.com/protected"
     username = "user"
@@ -354,7 +354,7 @@ async def test_basic_auth(async_scraper: AsyncAutoScraper, mock_aioresponse):
     assert "Protected Content" in results
 
 @pytest.mark.asyncio
-async def test_token_auth(async_scraper: AsyncAutoScraper, mock_aioresponse):
+async def test_token_auth(async_scraper: AiohttpAutoScraper, mock_aioresponse):
     """Test token-based authentication"""
     url = "http://test.com/api"
     token = "secret_token"

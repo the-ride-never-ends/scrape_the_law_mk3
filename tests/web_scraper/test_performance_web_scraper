@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 
 from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
-from development.input_layer.autoscraper_web_scraper.async_auto_scraper import AsyncAutoScraper
+from development.input_layer.autoscraper_web_scraper.async_auto_scraper import AiohttpAutoScraper
 from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper import PlaywrightAutoScraper
 
 
@@ -72,7 +72,7 @@ class PerformanceTests:
             initial = self.process.memory_info().rss
             
             # Process document
-            scraper = AsyncAutoScraper()
+            scraper = AiohttpAutoScraper()
             soup = scraper._process_soup(html)
             
             peak = self.process.memory_info().rss
@@ -124,7 +124,7 @@ class PerformanceTests:
             results = []
             
             for concurrency in concurrency_levels:
-                scraper = AsyncAutoScraper()
+                scraper = AiohttpAutoScraper()
                 start_time = time.time()
                 initial_memory = self.process.memory_info().rss
                 
@@ -187,7 +187,7 @@ class PerformanceTests:
 
         for depth in depths:
             html = generate_nested_html(depth)
-            scraper = AsyncAutoScraper()
+            scraper = AiohttpAutoScraper()
             
             # Measure rule building time
             cpu_time = measure_cpu_time(
@@ -231,7 +231,7 @@ class PerformanceTests:
 
             for count in request_counts:
                 # Test with connection pooling
-                scraper = AsyncAutoScraper()
+                scraper = AiohttpAutoScraper()
                 start_time = time.time()
                 tasks = [
                     scraper._async_fetch_html('http://localhost:8080/')
@@ -268,7 +268,7 @@ class PerformanceTests:
         # 3. Verify no resource leaks
         
         def create_and_use_scraper():
-            scraper = AsyncAutoScraper()
+            scraper = AiohttpAutoScraper()
             html = self._generate_large_html(1)
             scraper.build(html=html, wanted_list=['Content'])
             return scraper
@@ -309,7 +309,7 @@ class PerformanceTests:
         # 2. Monitor memory usage pattern
         # 3. Verify no unbounded growth
         
-        scraper = AsyncAutoScraper()
+        scraper = AiohttpAutoScraper()
         initial_memory = self.process.memory_info().rss
         measurements = []
 
@@ -351,7 +351,7 @@ class PerformanceTests:
 
         async def run_bandwidth_test(size_mb: int):
             monitor = NetworkMonitor()
-            scraper = AsyncAutoScraper()
+            scraper = AiohttpAutoScraper()
             
             # Make request
             html = await scraper._async_fetch_html(f'http://localhost:8080/{size_mb}')
@@ -412,7 +412,7 @@ class PerformanceTests:
 
         # Setup test data
         metrics = CacheMetrics()
-        scraper = AsyncAutoScraper()
+        scraper = AiohttpAutoScraper()
         test_pages = {
             'http://test1.com': self._generate_large_html(1),
             'http://test2.com': self._generate_large_html(1),

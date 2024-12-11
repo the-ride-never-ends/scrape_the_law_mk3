@@ -59,7 +59,7 @@ import random
 import string
 
 from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
-from development.input_layer.autoscraper_web_scraper.async_auto_scraper import AsyncAutoScraper
+from development.input_layer.autoscraper_web_scraper.aiohttp_auto_scraper import AiohttpAutoScraper
 from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper import PlaywrightAutoScraper
 
 

@@ -53,7 +53,7 @@ from unittest.mock import Mock, patch
 from urllib.parse import urljoin
 
 from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
-from development.input_layer.autoscraper_web_scraper.async_auto_scraper import AsyncAutoScraper
+from development.input_layer.autoscraper_web_scraper.aiohttp_auto_scraper import AiohttpAutoScraper
 from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper import PlaywrightAutoScraper
 
 
@@ -87,7 +87,7 @@ async def mock_server():
 
 @pytest.fixture
 def scraper():
-    return AsyncAutoScraper()
+    return AiohttpAutoScraper()
 
 # 1. XSS Testing
 class TestXSSSecurity:
