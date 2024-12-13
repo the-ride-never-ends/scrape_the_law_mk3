@@ -26,7 +26,7 @@ from playwright.async_api import (
 
 from abc import ABC, abstractmethod
 
-from ..proxy.proxy import Proxy
+from ..proxy.proxy import Proxies
 
 
 class BasePlaywright(ABC):
@@ -37,7 +37,7 @@ class BasePlaywright(ABC):
                 ) -> None:
         self.sitemaps_data: dict = {}
         self.wait_until: str = wait_until
-        self.proxies: Proxy = Proxy()
+        self.proxies: Proxies = Proxies()
 
         # Load sitemaps.json file to get the list of sitemap URLs
         with open(sitemaps_json, "r") as infile:

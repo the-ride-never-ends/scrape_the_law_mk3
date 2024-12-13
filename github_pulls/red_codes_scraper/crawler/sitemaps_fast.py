@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from tqdm import asyncio as tqdmasyncio
 
 
-from ..proxy.proxy import Proxy, Headers
+from ..proxy.proxy import Proxies, Headers
 
 
 MAX_CONNECTIONS = 5
@@ -38,7 +38,7 @@ class SiteMapsFast:
                 ):
         self.domains_json: str = domains_json
         self.progressbar: bool = progressbar
-        self.proxies: Proxy = Proxy(library="aiohttp", **kwargs)
+        self.proxies: Proxies = Proxies(library="aiohttp", **kwargs)
 
 
     # TODO: Is it a good idea to have response 200. or it's better trace all statuses and if status was 200 then do it

@@ -117,3 +117,24 @@ def validate_path_then_return_it(file_path: str) -> str:
         return str(path.resolve())
     else:
         raise FileNotFoundError(f"Could not find file '{file_path}'")
+
+
+# Get rid of the proxies we've already used.
+def get_rid_of_the_proxies_we_have_already_used(proxies_set: set, used_proxies_set: set) -> tuple[set, set]:
+    """
+    Remove used proxies from the set of available proxies.
+    NOTE: The sets in the tuple may or may not be empty.
+
+    Args:
+        proxies_set (set): Set of available proxies.
+        used_proxies_set (set): Set of already used proxies.
+
+    Returns:
+        tuple: Updated proxies_set and used_proxies_set.
+    """
+    proxies_set.difference_update(used_proxies_set)
+    if len(proxies_set) == 0:
+        logger.warning(f"WARNING: All the proxies in proxies_set were already used. Skipping...")
+    else:
+        logger.info(f"Loaded {len(proxies_set)} proxies from proxies_set.")
+    return proxies_set, used_proxies_set

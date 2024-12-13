@@ -1,5 +1,5 @@
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Any, List, Dict
+from typing import Any, list, dict
 import asyncio
 
 
@@ -139,17 +139,17 @@ class AbstractScraper(ABC):
         pass
 
     @abstractmethod
-    async def extract_data(self) -> Dict[str, Any]:
+    async def extract_data(self) -> dict[str, Any]:
         """Extract the required data from the page."""
         pass
 
     @abstractmethod
-    async def process_data(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_data(self, raw_data: dict[str, Any]) -> dict[str, Any]:
         """Process and clean the extracted data."""
         pass
 
     @abstractmethod
-    async def save_data(self, processed_data: Dict[str, Any]) -> None:
+    async def save_data(self, processed_data: dict[str, Any]) -> None:
         """Save the processed data."""
         pass
 
@@ -158,7 +158,7 @@ class AbstractScraper(ABC):
         """Perform any necessary cleanup after scraping."""
         pass
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Main method to run the scraping process."""
         try:
             await self.setup()

@@ -1,27 +1,21 @@
 
 
 
-from abc import ABC, abstractmethod
-import aiohttp
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page, PlaywrightContextManager, Playwright
-
-from collections import defaultdict
-
-from bs4 import BeautifulSoup
+import abc
+from typing import Any, Optional
 from urllib.parse import urlparse
-import asyncio
-from typing import Optional, Dict, Any, Union
-import os
 
 
-from urllib.robotparser import RobotFileParser
-from urllib.parse import urljoin, urlsplit, urlparse
+import aiohttp
 
 
 from logger.logger import Logger
 
 
-from auto_scraper_base_class import BaseAutoScraper
+from .auto_scraper_base_class import BaseAutoScraper
+from .playwright_auto_scraper import PlaywrightAutoScraper
+from .proxies.proxies import Proxies, Headers
+
 
 REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 \
@@ -43,7 +37,12 @@ REQUEST_HEADERS = {
 class AiohttpAutoScraper(BaseAutoScraper):
     """AutoScraper implementation using aiohttp for basic requests"""
 
-    async def _fetch_html(self, url: str, request_args: Optional[Dict[str, Any]] = None) -> str:
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+    async def _async_fetch_html(self, url: str, request_args: Optional[dict[str, Any]] = None) -> str:
         request_args = request_args or {}
         headers = dict(REQUEST_HEADERS)
         if url:
@@ -93,7 +92,6 @@ def create_scraper(scraper_type: str = "async", **kwargs) -> BaseAutoScraper:
                 )
     """
     scrapers = {
-        "requests": RequestsAutoScraper,
         "aiohttp": AiohttpAutoScraper,
         "playwright": PlaywrightAutoScraper
     }

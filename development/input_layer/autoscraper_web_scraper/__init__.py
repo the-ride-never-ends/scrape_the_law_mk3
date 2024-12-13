@@ -1,1 +1,1 @@
-from .auto_scraper_base_class import AutoScraper
+from .auto_scraper_base_class import BaseAutoScraper

@@ -228,7 +228,7 @@ def determine_source_type(domain: str) -> SourceType:
 from web_scraper.playwright.async_.async_playwright_scraper import AsyncPlaywrightScrapper
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, dict, Any
 
 
 
@@ -241,7 +241,7 @@ class Trigger:
     timeout: float = 30.0
     headers: Optional[dict[str, str]] = None
     proxy: Optional[str] = None
-    custom_settings: Optional[Dict[str, Any]] = None
+    custom_settings: Optional[dict[str, Any]] = None
 
     def __post_init__(self):
         if self.headers is None:

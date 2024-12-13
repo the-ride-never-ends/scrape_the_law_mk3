@@ -7,23 +7,54 @@ from urllib.robotparser import RobotFileParser
 
 
 from bs4 import BeautifulSoup, PageElement, Tag, ResultSet
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page, PlaywrightContextManager, Playwright
-
+from playwright.async_api import (
+    async_playwright, 
+    Browser, 
+    BrowserContext, 
+    Page, 
+    PlaywrightContextManager, 
+    Playwright
+)
 
 from utils.shared.make_id import make_id
 
-from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
+from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import (
+    BaseAutoScraper, 
+    Stack,
+    PlaywrightStack
+)
 
 
 T = TypeVar('T')
 
 
 class Trigger():
-    stack_list: OrderedDict = {}
+    stack_list: list[Stack] = {}
 
 
 class PlaywrightTrigger(Trigger):
     playwright_stack_list: list[Callable|Coroutine] = []
+
+
+@dataclass
+class PlaywrightStack(Stack):
+    _playwright_content: list[tuple[str, dict, Optional[int]]] = None
+
+    def __post_init__(self):
+        super().__post_init__()
+
+    @property
+    def stack(self):
+        return {
+            'playwright_content': self._playwright_content,
+            'content': self.content,
+            'wanted_attr': self.wanted_attr,
+            'is_full_url': self.is_full_url,
+            'is_non_rec_text': self.is_non_rec_text,
+            'url': self.url if self.is_full_url else "",
+            'hash': self.hash,
+            'stack_id': self.stack_id
+        }
 
 
 class PlaywrightAutoScraper(BaseAutoScraper):
@@ -32,20 +63,22 @@ class PlaywrightAutoScraper(BaseAutoScraper):
     """
     
     def __init__(self, 
-                 stack_list=None, 
+                 stack_list: list[PlaywrightStack|Stack] = None, 
                  browser_type: str = "chromium", 
                  post_processing: dict = None,
-                 id: int = None
+                 id: int = None,
+                 **kwargs
                 ):
         super().__init__(stack_list=stack_list, post_processing=post_processing)
         self.browser_type: Browser = browser_type
         self._playwright: Playwright = None
         self._browser: Browser = None
+        self._kwargs: dict[str, Any] = kwargs
 
     async def enter(self) -> None:
         self._playwright = await async_playwright().start()
         browser_launch = getattr(self._playwright, self.browser_type)
-        self._browser = await browser_launch.launch()
+        self._browser = await browser_launch.launch(self, **self._kwargs)
 
 
     async def exit_(self, exc_type, exc_val, exc_tb) -> None:
@@ -62,6 +95,9 @@ class PlaywrightAutoScraper(BaseAutoScraper):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self.exit_(exc_type, exc_val, exc_tb)
+    
+    async def _execute_playwright_stack(self):
+        self
 
 
     async def _fetch_html(self, url: str, request_args: Optional[dict[str, Any]] = None) -> str:

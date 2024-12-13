@@ -20,7 +20,6 @@ import yaml
 
 from utils.shared.make_id import make_id
 from utils.shared.safe_format import safe_format
-from .file_path_to_dict import file_path_to_dict
 from database.mysql_database import MySqlDatabase
 from config.config import (
     HOST,
@@ -110,7 +109,7 @@ file_opener_func_dict = {
 
 def file_path_to_dict(file_path: str, logger: Logger = None) -> dict | None:
     if not logger:
-        logger = Logger(logger_name=f"{__name__}__{file_path_to_dict.__name__}__{str(make_id())}")
+        logger = Logger(logger_name=f"{__name__}__{str(make_id())}")
     
     if (os.path.exists(file_path) and os.path.isfile(file_path)) or "mysql" in file_path:
         # Since mysql paths aren't really paths to a file, we call it directly 

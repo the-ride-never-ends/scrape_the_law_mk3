@@ -1,6 +1,7 @@
 import csv
 from dataclasses import dataclass, field
 from enum import Enum
+import os
 from pathlib import Path
 import random
 import logging
@@ -11,25 +12,31 @@ import requests
 import requests.auth
 
 
-from .utils import open_csv_file_as_set, save_set_to_csv_file, validate_path_then_return_it
+from .utils import (
+    open_csv_file_as_set, 
+    save_set_to_csv_file, 
+    validate_path_then_return_it,
+    get_rid_of_the_proxies_we_have_already_used
+)
 
 
 logger = logging.getLogger(__name__)
 
+this_files_directory = os.path.dirname(os.path.realpath(__file__))
+proxies_csv_file_path = os.path.join(this_files_directory, "proxies.csv")
+used_proxies_csv_file_path = os.path.join(this_files_directory, "used_proxies.csv")
+print(f"proxies_csv_file_path: {proxies_csv_file_path}")
+print(f"used_proxies_csv_file_path: {used_proxies_csv_file_path}")
 
 # Load in the fresh and used proxies from the CSV files.
-_proxies_file_path = validate_path_then_return_it("proxies.csv")
-_used_proxies_file_path = validate_path_then_return_it("used_proxies.csv")
-_proxies_set = open_csv_file_as_set(_proxies_file_path)
-_used_proxies_set = open_csv_file_as_set(_used_proxies_file_path)
+proxies_file_path = validate_path_then_return_it(proxies_csv_file_path)
+used_proxies_set = validate_path_then_return_it(used_proxies_csv_file_path)
 
+proxies_set: set = open_csv_file_as_set(proxies_file_path)
+used_proxies_set: set = open_csv_file_as_set(used_proxies_set)
 
-# Get rid of the proxies we've already used.
-_proxies_set.difference_update(_used_proxies_set)
-if len(_proxies_set) == 0:
-    logger.warning(f"WARNING: All the proxies in '{_proxies_file_path}' were already used. Skipping...")
-else:
-    logger.info(f"Loaded {len(_proxies_set)} proxies from {_proxies_file_path}.")
+proxies_set, used_proxies_set = get_rid_of_the_proxies_we_have_already_used(proxies_set, used_proxies_set)
+
 
 
 # TODO Define custom headers to suite the library.
@@ -65,15 +72,15 @@ class _LibraryType(Enum):
 
 
 @dataclass
-class Proxy:
+class Proxies:
     """
     Container for proxies to feed to an HTTP request.
 
     Attributes:
         library (_LibraryType): The type of library the proxy will be used with. Options are REQUESTS, AIOHTTP, and PLAYWRIGHT.
-        credentials (str): Proxy credentials in the format 'username:password'.
-        username (str): Proxy username (extracted from credentials if provided).
-        password (str): Proxy password (extracted from credentials if provided).
+        credentials (str): Proxies credentials in the format 'username:password'.
+        username (str): Proxies username (extracted from credentials if provided).
+        password (str): Proxies password (extracted from credentials if provided).
         auto_add_proxy_to_proxy_auth (bool): If True, automatically adds the proxy to the proxy authentication.
     
     Properties:
@@ -84,16 +91,16 @@ class Proxy:
         The class automatically manages a set of used proxies and saves them to a CSV file upon object deletion.
     """
 
-    library: _LibraryType = field(default=_LibraryType.REQUESTS, metadata={
+    library: _LibraryType = field(default_factory=_LibraryType.REQUESTS, metadata={
         'options': (_LibraryType.REQUESTS, _LibraryType.AIOHTTP, _LibraryType.PLAYWRIGHT)
     })
     credentials: str = None
     username: str = None
     password: str = None
-    auto_add_proxy_to_proxy_auth: bool = True
+    auto_add_proxy_to_proxy_auth: bool = field(default_factory=True)
     _num_proxies_returned: int = 3 # For the three sections in a dictionary of "http", "https", and "ftp"
     _proxy_auth: requests.auth.HTTPBasicAuth | aiohttp.BasicAuth | dict = field(init=False)
-    _used_proxies: set = set()
+    _used_proxies: set = field(default_factory=set())
 
 
     def __post_init__(self):
@@ -142,7 +149,7 @@ class Proxy:
     def __del__(self):
         # Save the used proxies to the used proxies CSV upon garbage collection.
         if self._used_proxies is not None:
-            save_set_to_csv_file(self._used_proxies, _used_proxies_file_path)
+            save_set_to_csv_file(self._used_proxies, used_proxies_set)
 
     @property
     def proxy_auth(self) -> aiohttp.BasicAuth | requests.auth.HTTPBasicAuth | dict[str, str] | dict[None]:
@@ -180,9 +187,9 @@ class Proxy:
         """
         # Return proxies from the set as specified by _num_proxies_returned
         try:
-            chosen_proxies: list[str] = random.sample(_proxies_set, k=self._num_proxies_returned)
+            chosen_proxies: list[str] = random.sample(proxies_set, k=self._num_proxies_returned)
         except ValueError:
-            logger.warning("_proxies_set has run out of new proxies. Skipping...")
+            logger.warning("proxies_set has run out of new proxies. Skipping...")
             return None
 
         if len(chosen_proxies) != self._num_proxies_returned:
@@ -207,12 +214,12 @@ class Headers:
     Attributes:
         library: The type of library the headers will be assigned to. Options are "requests", "aiohttp", and "playwright".
     """
-    library: _LibraryType = field(default=_LibraryType.REQUESTS, metadata={
+    library: _LibraryType = field(default_factory=_LibraryType.REQUESTS, metadata={
         'options': (_LibraryType.REQUESTS, _LibraryType.AIOHTTP, _LibraryType.PLAYWRIGHT)
     })
-    _requests_headers: dict = field(default=_REQUESTS_HEADERS)
-    _aiohttp_headers: dict = field(default=_AIOHTTP_HEADERS)
-    _playwright_headers: dict = field(default=_PLAYWRIGHT_HEADERS)
+    _requests_headers: dict = field(default_factory=_REQUESTS_HEADERS)
+    _aiohttp_headers: dict = field(default_factory=_AIOHTTP_HEADERS)
+    _playwright_headers: dict = field(default_factory=_PLAYWRIGHT_HEADERS)
 
     @property
     def headers(self) -> dict[str, str]:
