@@ -78,7 +78,7 @@ from bs4 import BeautifulSoup
 import random
 
 from development.input_layer.autoscraper_web_scraper.auto_scraper_base_class import BaseAutoScraper
-from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper import PlaywrightAutoScraper
+from development.input_layer.autoscraper_web_scraper.playwright_auto_scraper.playwright_auto_scraper import PlaywrightAutoScraper
 
 
 # Mock response class for testing

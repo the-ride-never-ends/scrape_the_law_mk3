@@ -8,7 +8,7 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-from .utils import (
+from ..utils.utils import (
     FuzzyText,
     ResultItem,
     get_non_rec_text,

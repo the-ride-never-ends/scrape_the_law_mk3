@@ -12,9 +12,9 @@ import aiohttp
 from logger.logger import Logger
 
 
-from .auto_scraper_base_class import BaseAutoScraper
-from .playwright_auto_scraper import PlaywrightAutoScraper
-from .proxies.proxies import Proxies, Headers
+from ..auto_scraper_base_class import BaseAutoScraper
+from ..playwright_auto_scraper.playwright_auto_scraper import PlaywrightAutoScraper
+from ..proxies.proxies import Proxies, Headers
 
 
 REQUEST_HEADERS = {

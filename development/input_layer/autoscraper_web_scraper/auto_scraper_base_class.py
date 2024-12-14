@@ -41,7 +41,7 @@ from logger.logger import Logger
 
 from dataclasses import dataclass
 
-from .utils import (
+from .utils.utils import (
     FuzzyText,
     ResultItem,
     get_non_rec_text,
@@ -99,12 +99,12 @@ this_files_directory = os.path.dirname(os.path.realpath(__file__))
 from dataclasses import dataclass, field
 import hashlib
 from typing import Optional
-from .utils import get_random_str
+from .utils.utils import get_random_str
 
 from dataclasses import dataclass, field
 import hashlib
 from typing import Optional
-from .utils import get_random_str
+from .utils.utils import get_random_str
 
 @dataclass
 class Stack:
@@ -174,20 +174,6 @@ class DocumentStatus(Enum):
     COMPLETE = "complete"
     ERROR = "error"
 
-class JobStatus(Enum):
-    """
-    Enumeration representing the possible statuses of a processing job.
-
-    Attributes:
-        PENDING (str): Indicates that the job is waiting to be processed.
-        RUNNING (str): Indicates that the job is currently being processed.
-        COMPLETE (str): Indicates that the job has finished processing successfully.
-        FAILED (str): Indicates that the job encountered an error during processing.
-    """
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETE = "complete"
-    FAILED = "failed"
 
 @dataclass
 class Document:
@@ -196,7 +182,7 @@ class Document:
     url: str
     scraping_config: dict[str, Any] = {
         "stack": Stack,
-        "robots": str,
+        "robots": str, # NOTE This is gotten from the Sources table in MySQL.
     }
     last_scrape: Optional[datetime]
     last_successful_scrape: Optional[datetime]
@@ -211,38 +197,10 @@ class Document:
         if not 1 <= self.priority <= 5:
             raise ValueError("Priority must be between 1 and 5")
 
+
+
 class PlaywrightStack:
     pass
-
-# TODO 
-@dataclass
-class ProcessingJob:
-    job_id: UUID
-    document_id: UUID
-    status: JobStatus
-    processor_type: str
-    started_at: Optional[datetime]
-    completed_at: Optional[datetime]
-    processing_config: dict[str, Any]
-
-@dataclass
-class Trigger:
-    document_id: UUID
-
-
-@dataclass
-class TriggerList:
-    _trigger_list: list[Trigger]
-    yield_size: int
-
-    def __post_init__(self):
-        if self.yield_size <= 0:
-            raise ValueError("yield_size must be a positive integer")
-
-    @property
-    def trigger_list(self) -> Generator:
-        for i in range(0, len(self._trigger_list), self.yield_size):
-            yield self._trigger_list[i:i + self.yield_size]
 
 
 
@@ -271,7 +229,7 @@ class BaseAutoScraper(ABC):
     AutoScraper automatically learns a set of rules required to extract the needed content
         from a web page. So the programmer doesn't need to explicitly construct the rules.
 
-    Parameters
+    Args
     ----------
     stack_list: list
         List of rules learned by AutoScraper
@@ -785,7 +743,7 @@ class BaseAutoScraper(ABC):
         Automatically constructs a set of rules to scrape the specified target[s] from a web page.
             The rules are represented as stack_list.
 
-        Parameters:
+        Args:
         ----------
         url: str, optional
             URL of the target web page. You should either pass url or html or both.
@@ -1281,7 +1239,7 @@ class BaseAutoScraper(ABC):
         """
         Gets exact results based on the previously learned rules.
 
-        Parameters:
+        Args:
         ----------
         url: str, optional
             URL of the target web page. You should either pass url or html or both.
@@ -1366,7 +1324,7 @@ class BaseAutoScraper(ABC):
         """
         Gets similar and exact results based on the previously learned rules.
 
-        Parameters:
+        Args:
         ----------
         url: str, optional
             URL of the target web page. You should either pass url or html or both.
@@ -1414,52 +1372,33 @@ class BaseAutoScraper(ABC):
         exact = self.get_result_exact(**args)
         return similar, exact
 
-    def remove_rules(self, rules: list[Any]):
+    def remove_rules(self, rules: list[Any]) -> None:
         """
-        Removes a list of learned rules from stack_list.
+        Removes a list of learned rules from the stack_list.
 
-        Parameters:
-        ----------
-        rules : list
-            A list of rules to be removed
-
-        Returns:
-        --------
-        None
+        Args:
+            rules: A list of rules to be removed.
         """
-
         self.stack_list = [x for x in self.stack_list if x["stack_id"] not in rules]
 
-    def keep_rules(self, rules: list[Any]):
+
+    def keep_rules(self, rules: list[Any]) -> None:
         """
-        Removes all other rules except the specified ones.
+        Keeps only the specified rules and removes all others from the stack_list.
 
-        Parameters:
-        ----------
-        rules : list
-            A list of rules to keep in stack_list and removing the rest.
-
-        Returns:
-        --------
-        None
+        Args:
+            rules: A list of rule IDs to keep in the stack_list.
         """
 
         self.stack_list = [x for x in self.stack_list if x["stack_id"] in rules]
 
-    def set_rule_aliases(self, rule_aliases: dict[str, Any]):
+
+    def set_rule_aliases(self, rule_aliases: dict[str, Any]) -> None:
+        """Sets the specified alias for each rule
+
+        Args:
+            rule_aliases: A dictionary with keys of rule_id and values of alias
         """
-        Sets the specified alias for each rule
-
-        Parameters:
-        ----------
-        rule_aliases : dict
-            A dictionary with keys of rule_id and values of alias
-
-        Returns:
-        --------
-        None
-        """
-
         id_to_stack = {stack["stack_id"]: stack for stack in self.stack_list}
         for rule_id, alias in rule_aliases.items():
             id_to_stack[rule_id]["alias"] = alias
@@ -1470,7 +1409,7 @@ class BaseAutoScraper(ABC):
         print("This function is deprecated. Please use save() and load() instead.")
 
 
-    def make_bs4_stacklist_from_playwright_stack_list(self):
+    def make_bs4_stack_list_from_playwright_stack_list(self) -> list[dict[str, Any]]:
         """
         Constructs a list of BeautifulSoup-compatible locators based on an existing Playwright stack_list.
 
@@ -1478,8 +1417,6 @@ class BaseAutoScraper(ABC):
         with BeautifulSoup for web scraping.
 
         Returns:
-        --------
-        list
             A list of dictionaries, each containing BeautifulSoup-compatible locators and attributes.
         """
         bs4_stack_list = []
@@ -1503,18 +1440,14 @@ class BaseAutoScraper(ABC):
         return bs4_stack_list
 
 
-    def _parse_playwright_locator(self, locator):
+    def _parse_playwright_locator(self, locator) -> tuple[str, dict[str, str]]:
         """
         Parses a Playwright locator string into a tag name and attributes dictionary.
 
         Args:
-        -----
-        locator : str
-            A Playwright locator string (e.g., "div[class='example'][id='test']")
+            locator: (str) A Playwright locator string (e.g., "div[class='example'][id='test']")
 
         Returns:
-        --------
-        tuple
             A tuple containing the tag name and a dictionary of attributes
         """
         import re
@@ -1532,7 +1465,7 @@ class BaseAutoScraper(ABC):
         return tag_name, attrs
 
 
-    def make_playwright_stack_list_from_bs4_stack_list(self):
+    def make_playwright_stack_list_from_bs4_stack_list(self) -> list[dict[str, str]]:
         """
         Constructs a list of Playwright-compatible locators based on the existing stack_list.
 
@@ -1540,8 +1473,6 @@ class BaseAutoScraper(ABC):
         with Playwright for web scraping.
 
         Returns:
-        --------
-        list
             A list of dictionaries, each containing Playwright-compatible locators and attributes.
         """
         playwright_stack_list = []
@@ -1549,6 +1480,7 @@ class BaseAutoScraper(ABC):
         for stack in self.stack_list:
             playwright_stack = {
                 'locators': [],
+                'locator_actions': [],
                 'wanted_attr': stack['wanted_attr'],
                 'is_full_url': stack['is_full_url'],
                 'is_non_rec_text': stack.get('is_non_rec_text', False),
@@ -1558,7 +1490,7 @@ class BaseAutoScraper(ABC):
 
             for item in stack['content']:
                 tag_name = item[0]
-                attributes = item[1]
+                attributes: dict = item[1]
 
                 # Construct Playwright locator
                 locator = f"{tag_name}"
