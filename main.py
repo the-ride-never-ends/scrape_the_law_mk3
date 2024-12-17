@@ -41,6 +41,7 @@ import pandas as pd
 # Wrote more SAD.
 # Wrote yet more SAD.
 # Wrote data dictionaries for MySQL, module inputs/outputs
+# Wrote more data dictionary
 
 async def main():
 
